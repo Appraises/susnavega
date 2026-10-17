@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#061f32" />
+    <meta
+      name="description"
+      content="Protótipo navegável do FLUXSUS para acompanhamento de jornadas de cuidado."
+    />
+    <title>FLUXSUS — Protótipo</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/fluxsus-symbol.svg" />
+    <link rel="stylesheet" href="./styles.css?v=fluxsus-20260929" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <main class="main-area">
+        <header class="topbar">
+          <div class="header-main">
+            <div class="brand">
+              <img class="brand-logo" src="./assets/fluxsus-logo.svg" alt="FLUXSUS" width="163" height="40" />
+            </div>
+            <div class="header-right">
+              <div class="top-actions">
+                <button class="icon-button notification" aria-label="Notificações">♧<span>2</span></button>
+                <button class="help-button">Ajuda</button>
+              </div>
+              <div class="header-profile" aria-label="Perfil atual">
+                <span class="avatar">MC</span>
+                <span class="profile-copy"><strong class="profile-name">Maria Costa</strong><small class="profile-meta">Paciente</small></span>
+              </div>
+              <button class="mobile-menu" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="header-navigation">☰</button>
+            </div>
+          </div>
+          <div class="header-navigation" id="header-navigation">
+            <nav class="header-nav patient-nav" aria-label="Telas do paciente">
+              <button class="nav-item active" data-screen="patient-home">Início</button>
+              <button class="nav-item" data-screen="patient-journey">Minha jornada</button>
+            </nav>
+            <nav class="header-nav professional-nav hidden" aria-label="Telas do profissional">
+              <button class="nav-item" data-screen="professional-search">Buscar paciente</button>
+              <button class="nav-item" data-screen="professional-history">Histórico</button>
+              <button class="nav-item" data-screen="professional-create">Criar jornada</button>
+              <button class="nav-item" data-screen="professional-manage">Gerenciar jornada</button>
+            </nav>
+            <button class="mobile-help help-button">Ajuda</button>
+            <div class="role-switcher">
+              <span class="eyebrow">Visualizando como</span>
+              <div class="role-buttons" role="group" aria-label="Escolher perfil">
+                <button class="role-button active" data-role="patient" aria-pressed="true">Paciente</button>
+                <button class="role-button" data-role="professional" aria-pressed="false">Profissional</button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section id="patient-home" class="screen active" aria-labelledby="patient-home-title">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow teal">TERÇA-FEIRA, 22 DE SETEMBRO</span>
+              <h1 id="patient-home-title">Olá, Maria.</h1>
+              <p>Acompanhe seus cuidados e veja o que precisa da sua atenção.</p>
+            </div>
+            <div class="quiet-badge"><span></span> Dados atualizados às 09:42</div>
+          </div>
+
+          <div class="attention-card">
+            <div class="attention-icon">!</div>
+            <div><span class="eyebrow">PRECISA DA SUA ATENÇÃO</span><strong>Leve um documento com foto no dia do exame.</strong></div>
+            <button data-screen="patient-journey">Ver orientação <span>→</span></button>
+          </div>
+
+          <div class="section-heading">
+            <div><span class="eyebrow">SEUS ACOMPANHAMENTOS</span><h2>Jornadas em andamento</h2></div>
+            <span class="count-pill">2 ativas</span>
+          </div>
+
+          <div class="journey-grid">
+            <article class="journey-card featured" tabindex="0" data-screen="patient-journey">
+              <div class="card-top"><span class="status-pill active-status"><i></i> Em andamento</span><span class="card-code">JN-2048</span></div>
+              <div class="journey-symbol cardio" aria-hidden="true">♥</div>
+              <h3>Acompanhamento cardiológico</h3>
+              <p>Hospital Universitário · Cardiologia</p>
+              <div class="mini-progress"><span style="width: 54%"></span></div>
+              <div class="card-progress-label"><span>3 de 6 etapas</span><strong>Próximo: eletrocardiograma</strong></div>
+              <footer><span>Atualizada hoje</span><button>Ver jornada →</button></footer>
+            </article>
+
+            <article class="journey-card">
+              <div class="card-top"><span class="status-pill waiting"><i></i> Aguardando</span><span class="card-code">JN-1832</span></div>
+              <div class="journey-symbol eye" aria-hidden="true">◉</div>
+              <h3>Acompanhamento oftalmológico</h3>
+              <p>Clínica Escola · Oftalmologia</p>
+              <div class="mini-progress"><span style="width: 25%"></span></div>
+              <div class="card-progress-label"><span>1 de 4 etapas</span><strong>Aguardando análise</strong></div>
+              <footer><span>Atualizada há 3 dias</span><button>Ver jornada →</button></footer>
+            </article>
+          </div>
+
+          <div class="insight-row">
+            <div><span class="insight-icon">✓</span><span><strong>Você está em dia</strong><small>Nenhuma consulta perdida nos últimos 90 dias.</small></span></div>
+            <a href="#">Ver jornadas concluídas →</a>
+          </div>
+        </section>
+
+        <section id="patient-journey" class="screen" aria-labelledby="patient-journey-title">
+          <div class="breadcrumb"><button data-screen="patient-home">← Início</button><span>/</span><span>Acompanhamento cardiológico</span></div>
+          <div class="journey-heading">
+            <div><span class="status-pill active-status"><i></i> Em andamento</span><h1 id="patient-journey-title">Acompanhamento cardiológico</h1><p>Hospital Universitário · Iniciada em 28 de agosto de 2026</p></div>
+            <div class="journey-code"><span>Jornada</span><strong>JN-2048</strong></div>
+          </div>
+
+          <div class="journey-layout">
+            <article class="timeline-card">
+              <div class="timeline-header"><div><span class="eyebrow teal">SUA JORNADA</span><h2>Você está na etapa 3 de 6</h2><p class="journey-hint">Selecione uma etapa para ver os detalhes do seu cuidado.</p></div><div class="progress-ring"><span>50%</span></div></div>
+              <div class="timeline-canvas">
+                <svg class="journey-path desktop-path" viewBox="0 0 1000 240" preserveAspectRatio="none" aria-hidden="true">
+                  <path class="path-shadow" d="M90 104 C170 104 170 150 250 150 S330 94 410 94 S490 150 570 150 S650 100 730 100 S810 146 890 146" />
+                  <path class="path-done" d="M90 104 C170 104 170 150 250 150 S330 94 410 94" />
+                </svg>
+                <svg class="journey-path mobile-path" viewBox="0 0 400 1020" preserveAspectRatio="none" aria-hidden="true">
+                  <path class="path-shadow" d="M96 80 C96 160 304 160 304 260 S96 340 96 440 S304 520 304 620 S96 700 96 800 S304 880 304 980" />
+                  <path class="path-done" d="M96 80 C96 160 304 160 304 260 S96 340 96 440" />
+                </svg>
+
+                <button class="timeline-node done n1" data-step="referral"><span class="node-dot">✓</span><span class="node-copy"><small>28 AGO</small><strong>Encaminhamento recebido</strong><em>Concluído</em></span></button>
+                <button class="timeline-node done n2" data-step="triage"><span class="node-dot">✓</span><span class="node-copy"><small>03 SET</small><strong>Triagem cardiológica</strong><em>Concluído</em></span></button>
+                <button class="timeline-node current n3 selected" data-step="exam" aria-current="step"><span class="current-callout">VOCÊ ESTÁ AQUI</span><span class="pulse"></span><span class="node-dot">3</span><span class="node-copy"><small>ETAPA ATUAL</small><strong>Eletrocardiograma</strong><em>Agendado para 24 set.</em></span></button>
+                <button class="timeline-node next n4" data-step="consult"><span class="node-dot">4</span><span class="node-copy"><small>PRÓXIMA</small><strong>Consulta cardiológica</strong><em>Prevista para 02 out.</em></span></button>
+                <button class="timeline-node future n5" data-step="diagnosis"><span class="node-dot">5</span><span class="node-copy"><small>DEPOIS</small><strong>Avaliação e diagnóstico</strong><em>Aguardando</em></span></button>
+                <button class="timeline-node future n6" data-step="followup"><span class="node-dot">6</span><span class="node-copy"><small>ETAPA FINAL</small><strong>Plano de acompanhamento</strong><em>Aguardando</em></span></button>
+              </div>
+            </article>
+
+            <aside class="detail-panel" aria-live="polite">
+              <div class="panel-accent"></div>
+              <div class="detail-top"><span class="eyebrow teal">ETAPA SELECIONADA</span><span class="status-pill scheduled">Agendado</span></div>
+              <h2 class="detail-title">Eletrocardiograma</h2>
+              <p class="detail-summary">Exame que registra a atividade elétrica do coração e ajuda na avaliação cardiológica.</p>
+              <div class="detail-list">
+                <div><span class="detail-icon">▣</span><span><small>Data e horário</small><strong>24 de setembro, às 09:30</strong></span></div>
+                <div><span class="detail-icon">⌖</span><span><small>Local</small><strong>Hospital Universitário — Bloco B</strong></span></div>
+                <div><span class="detail-icon">♙</span><span><small>Responsável</small><strong>Setor de Cardiologia</strong></span></div>
+              </div>
+              <div class="pending-box"><div class="pending-title"><span>!</span><strong>Antes de ir</strong></div><p>Leve um documento com foto e chegue com 15 minutos de antecedência.</p></div>
+              <button class="secondary-button">Ver orientações completas</button>
+              <footer>Última atualização hoje, às 09:42</footer>
+            </aside>
+          </div>
+        </section>
+
+        <section id="professional-search" class="screen professional-screen" aria-labelledby="professional-search-title">
+          <div class="page-heading compact">
+            <div><span class="eyebrow teal">ÁREA PROFISSIONAL</span><h1 id="professional-search-title">Buscar paciente</h1><p>Localize um paciente para consultar suas jornadas de cuidado.</p></div>
+          </div>
+          <div class="search-panel">
+            <label for="patient-search">Nome, CNS ou identificador do paciente</label>
+            <div class="search-box"><span>⌕</span><input id="patient-search" value="Maria" placeholder="Digite para pesquisar" /><button id="search-button">Buscar</button></div>
+            <p class="privacy-note">Acesso restrito a pacientes sob sua responsabilidade.</p>
+          </div>
+          <div class="results-wrap">
+            <div class="section-heading"><div><span class="eyebrow">RESULTADOS</span><h2>1 paciente encontrado</h2></div></div>
+            <button class="patient-result" data-screen="professional-history">
+              <span class="avatar large">MC</span>
+              <span class="patient-info"><strong>Maria da Conceição Costa</strong><small>CNS simulado · •••• 4821</small></span>
+              <span class="patient-meta"><small>Data de nascimento</small><strong>14/03/1978</strong></span>
+              <span class="patient-meta"><small>Jornadas ativas</small><strong>2</strong></span>
+              <span class="result-arrow">→</span>
+            </button>
+          </div>
+        </section>
+
+        <section id="professional-history" class="screen professional-screen" aria-labelledby="professional-history-title">
+          <div class="breadcrumb"><button data-screen="professional-search">← Busca</button><span>/</span><span>Maria da Conceição Costa</span></div>
+          <div class="patient-header">
+            <span class="avatar xlarge">MC</span>
+            <div><span class="eyebrow teal">PACIENTE</span><h1 id="professional-history-title">Maria da Conceição Costa</h1><p>CNS simulado · •••• 4821 &nbsp;·&nbsp; 48 anos</p></div>
+            <button class="primary-button" data-screen="professional-create">＋ Criar nova jornada</button>
+          </div>
+          <div class="stat-strip">
+            <div><small>Jornadas ativas</small><strong>2</strong></div><div><small>Pendências abertas</small><strong class="warning-text">1</strong></div><div><small>Último atendimento</small><strong>18 set. 2026</strong></div><div><small>Unidade de referência</small><strong>UBS Centro</strong></div>
+          </div>
+          <div class="content-grid">
+            <div>
+              <div class="section-heading"><div><span class="eyebrow">ACOMPANHAMENTO</span><h2>Jornadas de cuidado</h2></div></div>
+              <article class="professional-journey-card" data-screen="professional-manage">
+                <div class="pj-icon">♥</div><div class="pj-main"><div><span class="status-pill active-status"><i></i> Em andamento</span><small>JN-2048</small></div><h3>Acompanhamento cardiológico</h3><p>Etapa atual: eletrocardiograma · 3 de 6 etapas</p><div class="mini-progress"><span style="width: 54%"></span></div></div><span class="result-arrow">→</span>
+              </article>
+              <article class="professional-journey-card">
+                <div class="pj-icon alt">◉</div><div class="pj-main"><div><span class="status-pill waiting"><i></i> Aguardando</span><small>JN-1832</small></div><h3>Acompanhamento oftalmológico</h3><p>Etapa atual: análise da regulação · 1 de 4 etapas</p><div class="mini-progress"><span style="width: 25%"></span></div></div><span class="result-arrow">→</span>
+              </article>
+            </div>
+            <aside class="activity-card"><span class="eyebrow">ATIVIDADE RECENTE</span><h2>Histórico resumido</h2><div class="activity-item"><span></span><div><strong>Consulta registrada</strong><small>18 set. · Dr. Eduardo Lima</small></div></div><div class="activity-item"><span></span><div><strong>Exame agendado</strong><small>16 set. · Regulação</small></div></div><div class="activity-item"><span></span><div><strong>Triagem concluída</strong><small>03 set. · Enf. Carla Reis</small></div></div></aside>
+          </div>
+        </section>
+
+        <section id="professional-create" class="screen professional-screen" aria-labelledby="professional-create-title">
+          <div class="breadcrumb"><button data-screen="professional-history">← Maria da Conceição</button><span>/</span><span>Nova jornada</span></div>
+          <div class="form-layout">
+            <div class="form-main">
+              <div class="page-heading compact"><div><span class="eyebrow teal">NOVA JORNADA</span><h1 id="professional-create-title">Criar jornada de cuidado</h1><p>Defina o objetivo e as etapas iniciais do acompanhamento.</p></div></div>
+              <form id="create-journey-form" class="form-card">
+                <div class="form-section"><span class="section-number">1</span><div><h2>Informações gerais</h2><p>Identifique o motivo principal do acompanhamento.</p></div></div>
+                <div class="form-grid"><label>Paciente<input value="Maria da Conceição Costa" disabled /></label><label>Tipo de jornada<select><option>Selecione</option><option selected>Acompanhamento especializado</option><option>Exames e diagnóstico</option><option>Tratamento continuado</option></select></label><label class="full">Nome da jornada<input value="Acompanhamento endocrinológico" /></label><label>Data de início<input type="date" value="2026-09-22" /></label><label>Unidade responsável<select><option selected>UBS Centro</option><option>Hospital Universitário</option></select></label></div>
+                <div class="form-divider"></div>
+                <div class="form-section"><span class="section-number">2</span><div><h2>Etapas iniciais</h2><p>Organize o percurso previsto para o paciente.</p></div></div>
+                <div class="stage-builder"><div class="stage-row"><span>1</span><input value="Avaliação inicial na UBS" /><select><option selected>Equipe APS</option></select><button type="button" aria-label="Reordenar">⋮⋮</button></div><div class="stage-row"><span>2</span><input value="Exames laboratoriais" /><select><option selected>Laboratório</option></select><button type="button" aria-label="Reordenar">⋮⋮</button></div><div class="stage-row"><span>3</span><input value="Consulta com especialista" /><select><option selected>Endocrinologia</option></select><button type="button" aria-label="Reordenar">⋮⋮</button></div><button type="button" class="add-stage">＋ Adicionar etapa</button></div>
+                <div class="form-actions"><button type="button" class="ghost-button" data-screen="professional-history">Cancelar</button><button type="submit" class="primary-button">Revisar e criar jornada</button></div>
+              </form>
+            </div>
+            <aside class="form-summary"><span class="eyebrow teal">RESUMO</span><h2>Nova jornada</h2><div class="summary-patient"><span class="avatar">MC</span><span><strong>Maria da Conceição</strong><small>CNS · •••• 4821</small></span></div><dl><div><dt>Tipo</dt><dd>Especializado</dd></div><div><dt>Etapas</dt><dd>3 definidas</dd></div><div><dt>Responsável</dt><dd>UBS Centro</dd></div></dl><div class="info-box">A jornada ficará visível para o paciente após a confirmação.</div></aside>
+          </div>
+        </section>
+
+        <section id="professional-manage" class="screen professional-screen" aria-labelledby="professional-manage-title">
+          <div class="breadcrumb"><button data-screen="professional-history">← Histórico da paciente</button><span>/</span><span>JN-2048</span></div>
+          <div class="manage-heading"><div><span class="status-pill active-status"><i></i> Em andamento</span><h1 id="professional-manage-title">Acompanhamento cardiológico</h1><p>Maria da Conceição Costa · JN-2048</p></div><button class="primary-button" id="open-update-modal">Atualizar etapa</button></div>
+          <div class="manage-grid">
+            <article class="manage-timeline">
+              <div class="section-heading"><div><span class="eyebrow">LINHA DO TEMPO</span><h2>Etapas da jornada</h2></div><span class="count-pill">3 de 6</span></div>
+              <div class="linear-timeline">
+                <button class="linear-step done"><span>✓</span><div><small>28 AGO 2026</small><strong>Encaminhamento recebido</strong><p>Registrado pela UBS Centro</p></div><em>Concluído</em></button>
+                <button class="linear-step done"><span>✓</span><div><small>03 SET 2026</small><strong>Triagem cardiológica</strong><p>Enf. Carla Reis</p></div><em>Concluído</em></button>
+                <button class="linear-step current"><span>3</span><div><small>ETAPA ATUAL</small><strong>Eletrocardiograma</strong><p>Agendado para 24 set., às 09:30</p></div><em>Agendado</em></button>
+                <button class="linear-step"><span>4</span><div><small>PRÓXIMA ETAPA</small><strong>Consulta cardiológica</strong><p>Prevista para 02 out.</p></div><em>Aguardando</em></button>
+                <button class="linear-step"><span>5</span><div><small>ETAPA FUTURA</small><strong>Avaliação e diagnóstico</strong><p>Sem data definida</p></div><em>Aguardando</em></button>
+                <button class="linear-step"><span>6</span><div><small>ETAPA FINAL</small><strong>Plano de acompanhamento</strong><p>Sem data definida</p></div><em>Aguardando</em></button>
+              </div>
+            </article>
+            <aside class="manage-aside"><div class="manage-info"><span class="eyebrow teal">ETAPA ATUAL</span><h2>Eletrocardiograma</h2><dl><div><dt>Responsável</dt><dd>Setor de Cardiologia</dd></div><div><dt>Data</dt><dd>24 set. · 09:30</dd></div><div><dt>Estado</dt><dd><span class="status-pill scheduled">Agendado</span></dd></div></dl></div><div class="open-pending"><div><span>!</span><strong>Pendência aberta</strong></div><p>Paciente deve levar documento com foto.</p><small>Responsável: paciente</small></div><div class="audit-note"><span>✓</span><p>Todas as alterações ficam registradas no histórico da jornada.</p></div></aside>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="update-modal" aria-hidden="true">
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-header"><div><span class="eyebrow teal">ATUALIZAR ETAPA</span><h2 id="modal-title">Eletrocardiograma</h2></div><button class="modal-close" aria-label="Fechar">×</button></div>
+        <form id="update-form">
+          <label>Novo estado<select id="stage-status"><option>Agendado</option><option>Em andamento</option><option>Concluído</option><option>Pendente</option><option>Devolvido</option></select></label>
+          <label>Data da atualização<input type="date" value="2026-09-22" /></label>
+          <label class="full">Observação<textarea rows="3" placeholder="Registre uma observação objetiva..."></textarea></label>
+          <label class="check-row full"><input type="checkbox" id="has-pending" /><span><strong>Esta atualização gera uma pendência</strong><small>Informe o motivo e quem precisa agir.</small></span></label>
+          <div class="pending-fields full hidden" id="pending-fields"><label>Motivo da pendência<input value="Documento de identificação necessário" /></label><label>Responsável<select><option selected>Paciente</option><option>Equipe APS</option><option>Regulação</option></select></label><label class="full">Orientação ao paciente<input value="Leve um documento com foto no dia do exame." /></label></div>
+          <div class="modal-actions full"><button type="button" class="ghost-button modal-cancel">Cancelar</button><button type="submit" class="primary-button">Salvar atualização</button></div>
+        </form>
+      </section>
+    </div>
+
+    <div class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>Alteração salva</strong><small>A jornada foi atualizada com sucesso.</small></div></div>
+    <script src="./app.js?v=header-nav-20260929"></script>
+  </body>
+</html>

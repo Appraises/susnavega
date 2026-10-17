@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">SUS Navega</title>
+  <desc id="desc">Uma rota em forma de N termina em um símbolo de cuidado.</desc>
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#123E56"/>
+      <stop offset="1" stop-color="#061F32"/>
+    </linearGradient>
+    <linearGradient id="route" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#35BDB5"/>
+      <stop offset="1" stop-color="#77E4D8"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="62" height="62" rx="16" fill="url(#tile)"/>
+  <path d="M17 46V20c0-4 3-5 6-1l19 25c3 4 5 2 5-3V18" fill="none" stroke="url(#route)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="17" cy="46" r="5" fill="#F7FFFE"/>
+  <circle cx="32" cy="31" r="4" fill="#0A3549" stroke="#F7FFFE" stroke-width="2"/>
+  <circle cx="47" cy="18" r="8" fill="#F7FFFE"/>
+  <path d="M47 13.5v9M42.5 18h9" fill="none" stroke="#0A8F88" stroke-width="2.6" stroke-linecap="round"/>
+</svg>

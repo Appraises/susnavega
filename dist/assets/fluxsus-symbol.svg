@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">FLUXSUS</title>
+  <desc id="desc">Um F desenhado como caminhos de cuidado, com etapas e um sinal de saúde.</desc>
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#123E56"/>
+      <stop offset="1" stop-color="#061F32"/>
+    </linearGradient>
+    <linearGradient id="flow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#35BDB5"/>
+      <stop offset="1" stop-color="#77E4D8"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="62" height="62" rx="16" fill="url(#tile)"/>
+  <path d="M17 46V22c0-3 2-5 5-5h25M17 31c7 0 13 0 22-2" fill="none" stroke="url(#flow)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="17" cy="46" r="5" fill="#F7FFFE"/>
+  <circle cx="39" cy="29" r="4" fill="#0A3549" stroke="#F7FFFE" stroke-width="2"/>
+  <circle cx="47" cy="17" r="8" fill="#F7FFFE"/>
+  <path d="M47 12.5v9M42.5 17h9" fill="none" stroke="#0A8F88" stroke-width="2.6" stroke-linecap="round"/>
+</svg>
