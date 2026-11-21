@@ -7,6 +7,14 @@ Protótipo navegável das telas do capítulo 13.
 - `dist/index.html`: página principal.
 - `dist/styles.css`: estilos e responsividade.
 - `dist/app.js`: navegação e interações.
+- `dist/model.js`: regras e dados sintéticos das jornadas.
+- `dist/assets/`: marcas do FLUXSUS e do SUS Navega.
+
+## Contas de demonstração
+
+O protótipo tem acesso demonstrativo para Paciente, Profissional e Secretariado. Use a senha `123456` com a conta escolhida na tela de acesso. A tela de Encaminhamentos internos permite registrar um encaminhamento e atualizar sua situação; uma devolução exige motivo, e a lista mostra quem alterou e quando.
+
+Os dados ficam neste navegador e são apenas para demonstração. Não use informações reais de pacientes.
 
 ## Como abrir
 
