@@ -5,20 +5,6 @@
 })(globalThis, function () {
   'use strict';
 
-  const STORAGE_KEY = 'fluxsus-demo-v1';
-  const STAGE_STATUSES = ['Aguardando', 'Agendado', 'Em andamento', 'Concluído', 'Pendente', 'Devolvido'];
-  const DEMO_USERS = [
-    { role: 'patient', identifier: 'paciente@fluxsus.demo', password: '123456', name: 'Maria Costa', label: 'Paciente', initials: 'MC' },
-    { role: 'professional', identifier: 'profissional@fluxsus.demo', password: '123456', name: 'Dra. Carla Reis', label: 'Equipe APS', initials: 'CR' },
-    { role: 'secretariat', identifier: 'secretariado@fluxsus.demo', password: '123456', name: 'João Lima', label: 'Secretariado', initials: 'JL' }
-  ];
-
-  function authenticateDemo(identifier, password) {
-    const user = DEMO_USERS.find((item) => item.identifier === String(identifier || '').trim().toLowerCase() && item.password === password);
-    if (!user) throw new Error('Confira o usuário e a senha de demonstração.');
-    return { role: user.role, name: user.name, label: user.label, initials: user.initials };
-  }
-
   function localDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -70,8 +56,6 @@
   }
 
   function copy(value) { return JSON.parse(JSON.stringify(value)); }
-  function clean(value) { return String(value || '').trim(); }
-  function validDate(value) { return /^\d{4}-\d{2}-\d{2}$/.test(value); }
 
   function normalizeState(source) {
     const state = copy(source);
@@ -94,6 +78,33 @@
     });
     state.events.forEach((event) => { if (event.actor === 'Regulação') event.actor = 'Secretariado'; });
     return state;
+  }
+
+  function stageAvailability(journey, stage) {
+    const missing = (stage.dependsOn || []).filter((id) => journey.stages.find((item) => item.id === id)?.status !== 'Concluído');
+    const blocked = (stage.pending || []).some((item) => item.status === 'Aberta' && item.blocking !== false);
+    return { available: stage.status !== 'Concluído' && !missing.length && !blocked && !['Suspensa', 'Concluída'].includes(journey.situation), missing, blocked };
+  }
+
+  function availableStages(journey) {
+    return journey.stages.filter((stage) => stageAvailability(journey, stage).available)
+      .sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999') || journey.stages.indexOf(a) - journey.stages.indexOf(b));
+  }
+
+  function validateDependencies(journey) {
+    const visiting = new Set(), visited = new Set();
+    function visit(stage) {
+      if (visiting.has(stage.id)) throw new Error('As dependências não podem formar um ciclo.');
+      if (visited.has(stage.id)) return;
+      visiting.add(stage.id);
+      for (const id of stage.dependsOn || []) {
+        const prerequisite = journey.stages.find((item) => item.id === id);
+        if (!prerequisite || id === stage.id) throw new Error('Escolha outra etapa da mesma jornada como pré-requisito.');
+        visit(prerequisite);
+      }
+      visiting.delete(stage.id); visited.add(stage.id);
+    }
+    journey.stages.forEach(visit);
   }
 
   function currentIndex(journey) {
@@ -134,152 +145,5 @@
     return { kind: 'waiting', title: 'Aguarde a conclusão dos pré-requisitos pela equipe.' };
   }
 
-  function nextId(journeys) {
-    const numbers = journeys.map((journey) => Number(journey.id.match(/^JN-(\d+)$/)?.[1] || 0));
-    return `JN-${Math.max(2048, ...numbers) + 1}`;
-  }
-
-  function createJourney(state, input, now = new Date()) {
-    const title = clean(input.title);
-    const type = clean(input.type);
-    const unit = clean(input.unit);
-    const startDate = clean(input.startDate);
-    const rows = Array.isArray(input.stages) ? input.stages : [];
-    if (!title || !type || !unit || !validDate(startDate)) throw new Error('Preencha nome, tipo, data e unidade da jornada.');
-    if (rows.length < 1 || rows.length > 6) throw new Error('Defina de 1 a 6 etapas para a jornada.');
-    if (rows.some((row) => !clean(row.title) || !clean(row.owner))) throw new Error('Todas as etapas precisam de nome e responsável.');
-
-    const result = copy(state);
-    const id = nextId(result.journeys);
-    const journey = {
-      id, patientId: result.patient.id, title, type, unit, startDate, updatedAt: now.toISOString(),
-      stages: rows.map((row, index) => ({
-        id: `${id}-S${index + 1}`, title: clean(row.title), owner: clean(row.owner),
-        status: index === 0 ? 'Em andamento' : 'Aguardando', date: index === 0 ? startDate : '',
-        location: unit, summary: 'Etapa registrada pela equipe responsável.', note: '', observation: '', pending: []
-      }))
-    };
-    result.journeys.unshift(journey);
-    result.events.unshift({ id: `EV-${now.getTime()}`, journeyId: id, title: 'Jornada criada', actor: 'Dra. Carla Reis', at: now.toISOString() });
-    return { state: result, journey };
-  }
-
-  function updateStage(state, journeyId, stageId, input, now = new Date()) {
-    const result = copy(state);
-    const journey = result.journeys.find((item) => item.id === journeyId);
-    const stage = journey?.stages.find((item) => item.id === stageId);
-    if (!stage) throw new Error('Etapa não encontrada. Atualize a página e tente novamente.');
-    if (['Suspensa', 'Concluída'].includes(journeyStatus(journey))) throw new Error('Reabra a jornada antes de atualizar uma etapa.');
-
-    const status = clean(input.status);
-    const owner = clean(input.owner);
-    const updateDate = clean(input.updateDate);
-    const stageDate = clean(input.stageDate);
-    if (!STAGE_STATUSES.includes(status) || !owner || !validDate(updateDate) || (stageDate && !validDate(stageDate))) {
-      throw new Error('Confira o estado, o responsável e as datas informadas.');
-    }
-    if (stage.status === 'Concluído' && status !== 'Concluído') {
-      throw new Error('Uma etapa concluída não pode ser reaberta nesta demonstração.');
-    }
-    if (status === 'Concluído') {
-      const position = journey.stages.findIndex((item) => item.id === stageId);
-      if (journey.stages.slice(0, position).some((item) => item.status !== 'Concluído')) {
-        throw new Error('Conclua as etapas anteriores antes de avançar esta etapa.');
-      }
-    }
-    if (input.resolvePending && input.pending) throw new Error('Resolva a pendência anterior antes de registrar outra.');
-
-    const open = (stage.pending || []).find((item) => item.status === 'Aberta');
-    if (input.resolvePending && open) { open.status = 'Resolvida'; open.resolvedAt = now.toISOString(); }
-
-    if (input.pending) {
-      const reason = clean(input.pending.reason);
-      const action = clean(input.pending.action);
-      const pendingOwner = clean(input.pending.owner);
-      const dueDate = clean(input.pending.dueDate);
-      if (!reason || !action || !pendingOwner || (dueDate && !validDate(dueDate))) {
-        throw new Error('Informe motivo, ação necessária e responsável pela pendência.');
-      }
-      const data = { reason, action, owner: pendingOwner, dueDate };
-      if (open) Object.assign(open, data);
-      else stage.pending.push({ id: `${stage.id}-P${stage.pending.length + 1}`, status: 'Aberta', ...data, createdAt: now.toISOString() });
-    }
-
-    const stillOpen = stage.pending.some((item) => item.status === 'Aberta');
-    if (['Pendente', 'Devolvido'].includes(status) && !stillOpen) throw new Error('Esse estado exige uma pendência com motivo, ação e responsável.');
-    if (status === 'Concluído' && stillOpen) throw new Error('Resolva a pendência aberta antes de concluir a etapa.');
-
-    stage.status = status;
-    stage.owner = owner;
-    stage.date = stageDate;
-    stage.observation = clean(input.observation);
-    stage.updatedAt = now.toISOString();
-    stage.updatedDate = updateDate;
-    journey.updatedAt = now.toISOString();
-    result.events.unshift({
-      id: `EV-${now.getTime()}`, journeyId, stageId,
-      title: input.resolvePending ? `Pendência resolvida · ${stage.title}` : input.pending ? `Pendência registrada · ${stage.title}` : `Etapa atualizada · ${stage.title}`,
-      actor: 'Dra. Carla Reis', at: now.toISOString()
-    });
-    return { state: result, journey, stage };
-  }
-
-  function changeJourneySituation(state, journeyId, action, reason, actor, now = new Date()) {
-    if (actor?.role !== 'professional' || !clean(actor.name)) throw new Error('Somente um profissional identificado pode alterar a situação.');
-    if (!clean(reason)) throw new Error('Informe o motivo da alteração da jornada.');
-    const result = copy(state);
-    const journey = result.journeys.find((item) => item.id === journeyId);
-    if (!journey) throw new Error('Jornada não encontrada.');
-    const from = journeyStatus(journey);
-    let to;
-    if (action === 'suspend' && ['Aguardando', 'Em andamento'].includes(from)) to = 'Suspensa';
-    else if (action === 'complete' && from === 'Aguardando conclusão' && !openPendings(journey).length) to = 'Concluída';
-    else if (action === 'reopen' && ['Suspensa', 'Concluída'].includes(from)) to = 'Em andamento';
-    else throw new Error('Esta mudança não é permitida na situação atual da jornada.');
-
-    if (action === 'reopen' && from === 'Concluída') {
-      const last = journey.stages[journey.stages.length - 1];
-      last.status = 'Em andamento';
-      last.updatedAt = now.toISOString();
-    }
-    journey.situation = to;
-    journey.situationReason = clean(reason);
-    journey.situationAt = now.toISOString();
-    journey.situationActor = clean(actor.name);
-    journey.updatedAt = now.toISOString();
-    result.events.unshift({
-      id: `EV-${now.getTime()}-${journeyId}-${action}`, journeyId, type: 'journey-situation',
-      title: `${from} → ${to}`, from, to, reason: clean(reason), actor: clean(actor.name), at: now.toISOString()
-    });
-    return { state: result, journey };
-  }
-
-  function stageAvailability(journey, stage) {
-    const missing = (stage.dependsOn || []).filter((id) => journey.stages.find((item) => item.id === id)?.status !== 'Concluído');
-    const blocked = (stage.pending || []).some((item) => item.status === 'Aberta' && item.blocking !== false);
-    return { available: stage.status !== 'Concluído' && !missing.length && !blocked && !['Suspensa', 'Concluída'].includes(journey.situation), missing, blocked };
-  }
-
-function availableStages(journey) {
-    return journey.stages.filter((stage) => stageAvailability(journey, stage).available)
-      .sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999') || journey.stages.indexOf(a) - journey.stages.indexOf(b));
-  }
-
-function validateDependencies(journey) {
-    const visiting = new Set(), visited = new Set();
-    function visit(stage) {
-      if (visiting.has(stage.id)) throw new Error('As dependências não podem formar um ciclo.');
-      if (visited.has(stage.id)) return;
-      visiting.add(stage.id);
-      for (const id of stage.dependsOn || []) {
-        const prerequisite = journey.stages.find((item) => item.id === id);
-        if (!prerequisite || id === stage.id) throw new Error('Escolha outra etapa da mesma jornada como pré-requisito.');
-        visit(prerequisite);
-      }
-      visiting.delete(stage.id); visited.add(stage.id);
-    }
-    journey.stages.forEach(visit);
-  }
-
-  return { STORAGE_KEY, STAGE_STATUSES, authenticateDemo, localDate, seedState, normalizeState, currentIndex, progress, journeyStatus, openPendings, nextStep, createJourney, updateStage, changeJourneySituation, offsetDate, copy, stageAvailability, availableStages, validateDependencies };
+  return { localDate, seedState, normalizeState, stageAvailability, availableStages, validateDependencies, currentIndex, progress, journeyStatus, openPendings, nextStep };
 });

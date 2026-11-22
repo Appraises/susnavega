@@ -1,330 +1,283 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#061f32" />
-    <meta
-      name="description"
-      content="Protótipo navegável do FLUXSUS para acompanhamento de jornadas de cuidado."
-    />
-    <title>FLUXSUS — Protótipo</title>
-    <link rel="icon" type="image/svg+xml" href="./assets/fluxsus-symbol.svg" />
-    <link rel="stylesheet" href="./styles.css?v=fluxsus-access-20261018" />
-  </head>
-  <body>
-    <section class="auth-shell" id="auth-screen" aria-labelledby="auth-title">
-      <div class="auth-panel">
-        <img class="auth-logo" src="./assets/fluxsus-logo.svg" alt="FLUXSUS" width="196" height="48" />
-        <span class="eyebrow teal">ACESSO DEMONSTRATIVO</span>
-        <h1 id="auth-title">Entre para acompanhar a jornada</h1>
-        <p>Escolha uma conta de demonstração. Este protótipo usa apenas dados sintéticos e não deve receber dados reais.</p>
-        <div class="auth-accounts" aria-label="Contas de demonstração">
-          <button type="button" class="auth-account" data-demo-user="paciente@fluxsus.demo"><span class="avatar">MC</span><span><strong>Paciente</strong><small>Maria Costa</small></span></button>
-          <button type="button" class="auth-account" data-demo-user="profissional@fluxsus.demo"><span class="avatar">CR</span><span><strong>Profissional</strong><small>Dra. Carla Reis</small></span></button>
-          <button type="button" class="auth-account" data-demo-user="secretariado@fluxsus.demo"><span class="avatar">JL</span><span><strong>Secretariado</strong><small>João Lima</small></span></button>
-        </div>
-        <form id="login-form" class="auth-form">
-          <label>Usuário de demonstração<input id="login-identifier" type="email" autocomplete="username" placeholder="paciente@fluxsus.demo" required /></label>
-          <label>Senha de demonstração<input id="login-password" type="password" autocomplete="current-password" placeholder="123456" required /></label>
-          <p class="auth-hint">Senha para as duas contas: <strong>123456</strong>. A sessão vale apenas nesta aba.</p>
-          <p class="auth-error" id="auth-error" role="alert" hidden></p>
-          <button class="primary-button auth-submit" type="submit">Entrar</button>
-        </form>
-        <small class="auth-disclaimer">Fluxo de acesso ilustrativo. A autenticação segura e a autorização no servidor ficam para a implementação de produção.</small>
-      </div>
-    </section>
-    <div class="prototype-shell" hidden>
-      <main class="main-area">
-        <header class="topbar">
-          <div class="header-main">
-            <div class="brand">
-              <img class="brand-logo" src="./assets/fluxsus-logo.svg" alt="FLUXSUS" width="163" height="40" />
-            </div>
-            <div class="header-right">
-              <div class="top-actions">
-                <div class="notification-wrap">
-                  <button class="icon-button notification" type="button" aria-label="Notificações" aria-expanded="false" aria-controls="notification-panel">♧<span>0</span></button>
-                  <section class="notification-panel" id="notification-panel" aria-label="Pendências da jornada" hidden>
-                    <div class="notification-panel-header"><div><span class="eyebrow teal">ACOMPANHAMENTO</span><h2>Notificações</h2></div><button type="button" class="notification-close" aria-label="Fechar notificações">×</button></div>
-                    <div class="notification-list" role="list"></div>
-                  </section>
-                </div>
-                <button class="help-button">Ajuda</button>
-              </div>
-              <div class="header-profile" aria-label="Perfil atual">
-                <span class="avatar">MC</span>
-                <span class="profile-copy"><strong class="profile-name">Maria Costa</strong><small class="profile-meta">Paciente</small></span>
-              </div>
-              <button class="logout-button" type="button">Sair</button>
-              <button class="mobile-menu" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="header-navigation">☰</button>
-            </div>
-          </div>
-          <div class="header-navigation" id="header-navigation">
-            <nav class="header-nav patient-nav" aria-label="Telas do paciente">
-              <button class="nav-item active" data-screen="patient-home">Início</button>
-              <button class="nav-item" data-screen="patient-journey">Minha jornada</button>
-            </nav>
-            <nav class="header-nav professional-nav hidden" aria-label="Telas do profissional">
-              <button class="nav-item" data-screen="professional-search">Buscar paciente</button>
-              <button class="nav-item" data-screen="professional-history">Histórico</button>
-              <button class="nav-item" data-screen="professional-create">Criar jornada</button>
-              <button class="nav-item" data-screen="professional-manage">Gerenciar jornada</button>
-            </nav>
-            <nav class="header-nav secretariat-nav hidden" aria-label="Telas do Secretariado">
-              <button class="nav-item" data-screen="secretariat-referrals">Encaminhamentos internos</button>
-            </nav>
-            <button class="mobile-help help-button">Ajuda</button>
-            <span class="session-indicator">Acesso demonstrativo · <strong class="session-role">Paciente</strong></span>
-          </div>
-        </header>
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#061f32" name="theme-color"/>
+<meta content="FLUXSUS para acompanhamento de jornadas de cuidado com dados sintéticos." name="description"/>
+<title>FLUXSUS — Incremento P3</title>
+<link href="./assets/fluxsus-symbol.svg" rel="icon" type="image/svg+xml"/>
+<link href="./styles.css?v=fluxsus-access-20261018" rel="stylesheet"/>
+</head>
+<body>
+<section aria-labelledby="auth-title" class="auth-shell" id="auth-screen">
+<div class="auth-panel">
+<img alt="FLUXSUS" class="auth-logo" height="48" src="./assets/fluxsus-logo.svg" width="196"/>
+<span class="eyebrow teal">ACESSO DEMONSTRATIVO</span>
+<h1 id="auth-title">Entre para acompanhar a jornada</h1>
+<p>Escolha uma conta de demonstração. Este protótipo usa apenas dados sintéticos e não deve receber dados reais.</p>
+<div aria-label="Contas de demonstração" class="auth-accounts">
+<button class="auth-account" data-demo-user="paciente@fluxsus.demo" type="button"><span class="avatar">MC</span><span><strong>Paciente</strong><small>Maria Costa</small></span></button>
+<button class="auth-account" data-demo-user="profissional@fluxsus.demo" type="button"><span class="avatar">CR</span><span><strong>Profissional</strong><small>Dra. Carla Reis</small></span></button>
 
-        <section id="patient-home" class="screen active" aria-labelledby="patient-home-title">
-          <div class="page-heading">
-            <div>
-              <span class="eyebrow teal" id="today-label">CENÁRIO DE DEMONSTRAÇÃO</span>
-              <h1 id="patient-home-title">Olá, Maria.</h1>
-              <p>Acompanhe seus cuidados e veja o que precisa da sua atenção.</p>
-            </div>
-            <div class="quiet-badge"><span></span> Dados simulados · salvos neste navegador</div>
-          </div>
 
-          <div class="attention-card">
-            <div class="attention-icon">!</div>
-            <div><span class="eyebrow">PRECISA DA SUA ATENÇÃO</span><strong>Leve um documento com foto no dia do exame.</strong><small class="attention-meta"></small></div>
-            <button data-screen="patient-journey">Ver orientação <span>→</span></button>
-          </div>
+<button class="auth-account" data-demo-user="pedro@fluxsus.demo" type="button"><span class="avatar">PO</span><span><strong>Outro paciente</strong><small>Pedro Oliveira</small></span></button>
+</div>
+<form class="auth-form" id="login-form">
+<label>Usuário de demonstração<input autocomplete="username" id="login-identifier" placeholder="paciente@fluxsus.demo" required="" type="email"/></label>
+<label>Senha de demonstração<input autocomplete="current-password" id="login-password" placeholder="123456" required="" type="password"/></label>
+<p class="auth-hint">Senha das contas de teste: <strong>123456</strong>. A sessão vale por até oito horas neste navegador.</p>
+<p class="auth-error" hidden="" id="auth-error" role="alert"></p>
+<button class="primary-button auth-submit" type="submit">Entrar</button>
+</form>
+<small class="auth-disclaimer">Incremento P3: acesso do paciente e do profissional, com dados sintéticos salvos no servidor.</small>
+</div>
+</section>
+<div class="prototype-shell" hidden="">
+<main class="main-area">
+<header class="topbar">
+<div class="header-main">
+<div class="brand">
+<img alt="FLUXSUS" class="brand-logo" height="40" src="./assets/fluxsus-logo.svg" width="163"/>
+</div>
+<div class="header-right">
+<div class="top-actions">
 
-          <div class="section-heading">
-            <div><span class="eyebrow">SEUS ACOMPANHAMENTOS</span><h2>Jornadas em andamento</h2></div>
-            <span class="count-pill">2 ativas</span>
-          </div>
+<button class="help-button">Ajuda</button>
+</div>
+<div aria-label="Perfil atual" class="header-profile">
+<span class="avatar">MC</span>
+<span class="profile-copy"><strong class="profile-name">Maria Costa</strong><small class="profile-meta">Paciente</small></span>
+</div>
+<button class="logout-button" type="button">Sair</button>
+<button aria-controls="header-navigation" aria-expanded="false" aria-label="Abrir menu" class="mobile-menu" type="button">☰</button>
+</div>
+</div>
+<div class="header-navigation" id="header-navigation">
+<nav aria-label="Telas do paciente" class="header-nav patient-nav">
+<button class="nav-item active" data-screen="patient-home">Início</button>
+<button class="nav-item" data-screen="patient-journey">Minha jornada</button>
+</nav>
+<nav aria-label="Telas do profissional" class="header-nav professional-nav hidden">
+<button class="nav-item" data-screen="professional-search">Buscar paciente</button>
+<button class="nav-item" data-screen="professional-history">Histórico</button>
+<button class="nav-item" data-screen="professional-create">Criar jornada</button>
+<button class="nav-item" data-screen="professional-manage">Gerenciar jornada</button>
+</nav>
 
-          <div class="journey-grid">
-            <article class="journey-card featured" tabindex="0" data-screen="patient-journey">
-              <div class="card-top"><span class="status-pill active-status"><i></i> Em andamento</span><span class="card-code">JN-2048</span></div>
-              <div class="journey-symbol cardio" aria-hidden="true">♥</div>
-              <h3>Acompanhamento cardiológico</h3>
-              <p>Hospital Universitário · Cardiologia</p>
-              <div class="mini-progress"><span style="width: 33%"></span></div>
-              <div class="card-progress-label"><span>3 de 6 etapas</span><strong>Próximo: eletrocardiograma</strong></div>
-              <footer><span>Atualizada hoje</span><button>Ver jornada →</button></footer>
-            </article>
 
-            <article class="journey-card">
-              <div class="card-top"><span class="status-pill waiting"><i></i> Aguardando</span><span class="card-code">JN-1832</span></div>
-              <div class="journey-symbol eye" aria-hidden="true">◉</div>
-              <h3>Acompanhamento oftalmológico</h3>
-              <p>Clínica Escola · Oftalmologia</p>
-              <div class="mini-progress"><span style="width: 0%"></span></div>
-              <div class="card-progress-label"><span>1 de 4 etapas</span><strong>Aguardando análise</strong></div>
-              <footer><span>Atualizada há 3 dias</span><button>Ver jornada →</button></footer>
-            </article>
-          </div>
+<button class="mobile-help help-button">Ajuda</button>
+<span class="session-indicator">Acesso demonstrativo · <strong class="session-role">Paciente</strong></span>
+</div>
+</header>
 
-          <div class="insight-row">
-            <div><span class="insight-icon">✓</span><span><strong>Você está em dia</strong><small>Nenhuma consulta perdida nos últimos 90 dias.</small></span></div>
-            <a href="#">Ver jornadas concluídas →</a>
-          </div>
-        </section>
+<section aria-labelledby="patient-home-title" class="screen active" id="patient-home">
+<div class="page-heading">
+<div>
+<span class="eyebrow teal" id="today-label">CENÁRIO DE DEMONSTRAÇÃO</span>
+<h1 id="patient-home-title">Olá, Maria.</h1>
+<p>Acompanhe seus cuidados e veja o que precisa da sua atenção.</p>
+</div>
+<div class="quiet-badge">P3 · Dados sintéticos salvos no servidor</div>
+</div>
+<div class="attention-card">
+<div class="attention-icon">!</div>
+<div><span class="eyebrow">PRECISA DA SUA ATENÇÃO</span><strong>Leve um documento com foto no dia do exame.</strong><small class="attention-meta"></small></div>
+<button data-screen="patient-journey">Ver orientação <span>→</span></button>
+</div>
+<div class="section-heading">
+<div><span class="eyebrow">SEUS ACOMPANHAMENTOS</span><h2>Jornadas em andamento</h2></div>
+<span class="count-pill">2 ativas</span>
+</div>
+<div class="journey-grid">
+<article class="journey-card featured" data-screen="patient-journey" tabindex="0">
+<div class="card-top"><span class="status-pill active-status"><i></i> Em andamento</span><span class="card-code">JN-2048</span></div>
+<div aria-hidden="true" class="journey-symbol cardio">♥</div>
+<h3>Acompanhamento cardiológico</h3>
+<p>Hospital Universitário · Cardiologia</p>
+<div class="mini-progress"><span style="width: 33%"></span></div>
+<div class="card-progress-label"><span>3 de 6 etapas</span><strong>Próximo: eletrocardiograma</strong></div>
+<footer><span>Atualizada hoje</span><button>Ver jornada →</button></footer>
+</article>
+<article class="journey-card">
+<div class="card-top"><span class="status-pill waiting"><i></i> Aguardando</span><span class="card-code">JN-1832</span></div>
+<div aria-hidden="true" class="journey-symbol eye">◉</div>
+<h3>Acompanhamento oftalmológico</h3>
+<p>Clínica Escola · Oftalmologia</p>
+<div class="mini-progress"><span style="width: 0%"></span></div>
+<div class="card-progress-label"><span>1 de 4 etapas</span><strong>Aguardando análise</strong></div>
+<footer><span>Atualizada há 3 dias</span><button>Ver jornada →</button></footer>
+</article>
+</div>
+<div class="insight-row">
+<div><span class="insight-icon">✓</span><span><strong>Você está em dia</strong><small>Nenhuma consulta perdida nos últimos 90 dias.</small></span></div>
+<a href="#">Ver jornadas concluídas →</a>
+</div>
+</section>
+<section aria-labelledby="patient-journey-title" class="screen" id="patient-journey">
+<div class="breadcrumb"><button data-screen="patient-home">← Início</button><span>/</span><span class="journey-breadcrumb-title">Acompanhamento cardiológico</span></div>
+<div class="journey-heading">
+<div><span class="status-pill active-status"><i></i> Em andamento</span><h1 id="patient-journey-title">Acompanhamento cardiológico</h1><p class="journey-subtitle">Hospital Universitário · Iniciada em 28 de agosto de 2026</p></div>
+<div class="journey-code"><span>Jornada</span><strong>JN-2048</strong></div>
+</div>
+<div class="situation-banner" hidden="" id="patient-situation-banner"></div>
+<div class="journey-layout">
+<article class="timeline-card">
+<div class="timeline-header"><div><span class="eyebrow teal">SUA JORNADA</span><h2>Você está na etapa 3 de 6</h2><p class="journey-hint">2 de 6 etapas concluídas. Selecione uma etapa para ver os detalhes.</p></div><div aria-label="2 de 6 etapas concluídas, 33 por cento" class="progress-ring" role="img"><span>33%</span></div></div>
+<div class="timeline-canvas">
+<svg aria-hidden="true" class="journey-path desktop-path" preserveaspectratio="none" viewbox="0 0 1000 240">
+<path class="path-shadow" d="M90 104 C170 104 170 150 250 150 S330 94 410 94 S490 150 570 150 S650 100 730 100 S810 146 890 146"></path>
+<path class="path-done" d="M90 104 C170 104 170 150 250 150 S330 94 410 94"></path>
+</svg>
+<svg aria-hidden="true" class="journey-path mobile-path" preserveaspectratio="none" viewbox="0 0 400 1020">
+<path class="path-shadow" d="M96 80 C96 160 304 160 304 260 S96 340 96 440 S304 520 304 620 S96 700 96 800 S304 880 304 980"></path>
+<path class="path-done" d="M96 80 C96 160 304 160 304 260 S96 340 96 440"></path>
+</svg>
+<button class="timeline-node done n1" data-step="referral"><span class="node-dot">✓</span><span class="node-copy"><small>28 AGO</small><strong>Encaminhamento recebido</strong><em>Concluído</em></span></button>
+<button class="timeline-node done n2" data-step="triage"><span class="node-dot">✓</span><span class="node-copy"><small>03 SET</small><strong>Triagem cardiológica</strong><em>Concluído</em></span></button>
+<button aria-current="step" class="timeline-node current n3 selected" data-step="exam"><span class="current-callout">VOCÊ ESTÁ AQUI</span><span class="pulse"></span><span class="node-dot">3</span><span class="node-copy"><small>ETAPA ATUAL</small><strong>Eletrocardiograma</strong><em>Agendado para 24 set.</em></span></button>
+<button class="timeline-node next n4" data-step="consult"><span class="node-dot">4</span><span class="node-copy"><small>PRÓXIMA</small><strong>Consulta cardiológica</strong><em>Prevista para 02 out.</em></span></button>
+<button class="timeline-node future n5" data-step="diagnosis"><span class="node-dot">5</span><span class="node-copy"><small>DEPOIS</small><strong>Avaliação e diagnóstico</strong><em>Aguardando</em></span></button>
+<button class="timeline-node future n6" data-step="followup"><span class="node-dot">6</span><span class="node-copy"><small>ETAPA FINAL</small><strong>Plano de acompanhamento</strong><em>Aguardando</em></span></button>
+</div>
+</article>
+<aside aria-live="polite" class="detail-panel">
+<div class="panel-accent"></div>
+<div class="detail-top"><span class="eyebrow teal">ETAPA SELECIONADA</span><span class="status-pill scheduled">Agendado</span></div>
+<h2 class="detail-title">Eletrocardiograma</h2>
+<p class="detail-summary">Exame que registra a atividade elétrica do coração e ajuda na avaliação cardiológica.</p>
+<div class="detail-list">
+<div><span class="detail-icon">▣</span><span><small>Data prevista ou realizada</small><strong>24 de setembro</strong></span></div>
+<div><span class="detail-icon">⌖</span><span><small>Local</small><strong>Hospital Universitário — Bloco B</strong></span></div>
+<div><span class="detail-icon">♙</span><span><small>Responsável</small><strong>Setor de Cardiologia</strong></span></div>
+</div>
+<div class="pending-box"><div class="pending-title"><span>!</span><strong>Antes de ir</strong></div><p>Leve um documento com foto e chegue com 15 minutos de antecedência.</p></div>
+<p class="detail-source">Informações registradas pela equipe de saúde.</p>
+<footer>Dados sintéticos · Salvos no servidor</footer>
+</aside>
+</div>
+</section>
+<section aria-labelledby="professional-search-title" class="screen professional-screen" id="professional-search">
+<div class="page-heading compact">
+<div><span class="eyebrow teal">ÁREA PROFISSIONAL</span><h1 id="professional-search-title">Buscar paciente</h1><p>Localize um paciente para consultar suas jornadas de cuidado.</p></div>
+</div>
+<div class="search-panel">
+<label for="patient-search">Nome, CNS ou identificador do paciente</label>
+<div class="search-box"><span>⌕</span><input id="patient-search" placeholder="Digite para pesquisar" value="Maria"/><button id="search-button">Buscar</button></div>
+<p class="privacy-note">Busque por nome ou CNS. Os cadastros são sintéticos e ficam no PostgreSQL.</p>
+</div>
+<div class="results-wrap">
+<div class="section-heading"><div><span class="eyebrow">RESULTADOS</span><h2>1 paciente encontrado</h2></div></div>
+<button class="patient-result" data-screen="professional-history">
+<span class="avatar large">MC</span>
+<span class="patient-info"><strong>Maria da Conceição Costa</strong><small>CNS simulado · •••• 4821</small></span>
+<span class="patient-meta"><small>Data de nascimento</small><strong>14/03/1978</strong></span>
+<span class="patient-meta"><small>Jornadas ativas</small><strong>2</strong></span>
+<span class="result-arrow">→</span>
+</button>
+</div>
+</section>
+<section aria-labelledby="professional-history-title" class="screen professional-screen" id="professional-history">
+<div class="breadcrumb"><button data-screen="professional-search">← Busca</button><span>/</span><span>Maria da Conceição Costa</span></div>
+<div class="patient-header">
+<span class="avatar xlarge">MC</span>
+<div><span class="eyebrow teal">PACIENTE</span><h1 id="professional-history-title">Maria da Conceição Costa</h1><p>CNS simulado · •••• 4821  ·  48 anos</p></div>
+<button class="primary-button" data-screen="professional-create">＋ Criar nova jornada</button>
+</div>
+<div class="stat-strip">
+<div><small>Jornadas ativas</small><strong>2</strong></div><div><small>Pendências abertas</small><strong class="warning-text">1</strong></div><div><small>Último atendimento</small><strong>18 set. 2026</strong></div><div><small>Unidade de referência</small><strong>Hospital Universitário</strong></div>
+</div>
+<div class="content-grid">
+<div>
+<div class="section-heading"><div><span class="eyebrow">ACOMPANHAMENTO</span><h2>Jornadas de cuidado</h2></div></div>
+<div id="professional-journeys"><article class="professional-journey-card" data-screen="professional-manage">
+<div class="pj-icon">♥</div><div class="pj-main"><div><span class="status-pill active-status"><i></i> Em andamento</span><small>JN-2048</small></div><h3>Acompanhamento cardiológico</h3><p>Etapa atual: eletrocardiograma · 3 de 6 etapas</p><div class="mini-progress"><span style="width: 33%"></span></div></div><span class="result-arrow">→</span>
+</article>
+<article class="professional-journey-card">
+<div class="pj-icon alt">◉</div><div class="pj-main"><div><span class="status-pill waiting"><i></i> Aguardando</span><small>JN-1832</small></div><h3>Acompanhamento oftalmológico</h3><p>Etapa atual: encaminhamento à oftalmologia · 1 de 4 etapas</p><div class="mini-progress"><span style="width: 0%"></span></div></div><span class="result-arrow">→</span>
+</article>
+</div>
+</div>
+<aside class="activity-card"><span class="eyebrow">ATIVIDADE RECENTE</span><h2>Histórico resumido</h2><div class="activity-item"><span></span><div><strong>Consulta registrada</strong><small>18 set. · Dr. Eduardo Lima</small></div></div><div class="activity-item"><span></span><div><strong>Exame agendado</strong><small>16 set. · Secretariado</small></div></div><div class="activity-item"><span></span><div><strong>Triagem concluída</strong><small>03 set. · Enf. Carla Reis</small></div></div></aside>
+</div>
+</section>
+<section aria-labelledby="professional-create-title" class="screen professional-screen" id="professional-create">
+<div class="breadcrumb"><button data-screen="professional-history">← Maria da Conceição</button><span>/</span><span>Nova jornada</span></div>
+<div class="form-layout">
+<div class="form-main">
+<div class="page-heading compact"><div><span class="eyebrow teal">NOVA JORNADA</span><h1 id="professional-create-title">Criar jornada de cuidado</h1><p>Defina o objetivo e as etapas iniciais do acompanhamento.</p></div></div>
+<form class="form-card" id="create-journey-form">
+<div class="form-section"><span class="section-number">1</span><div><h2>Informações gerais</h2><p>Identifique o motivo principal do acompanhamento.</p></div></div>
+<div class="form-grid"><label>Paciente<input disabled="" value="Maria da Conceição Costa"/></label><label>Tipo de jornada<select id="journey-type" required=""><option value="">Selecione</option><option selected="">Acompanhamento especializado</option><option>Exames e diagnóstico</option><option>Tratamento continuado</option></select></label><label class="full">Nome da jornada<input id="journey-name" required="" value="Acompanhamento endocrinológico"/></label><label class="full">Objetivo do acompanhamento<textarea id="journey-objective" required="" rows="2">Acompanhar os exames e a consulta especializada para definir a conduta.</textarea></label><label>Data de início<input id="journey-start" required="" type="date"/></label><label>Unidade responsável<select id="journey-unit" required=""><option selected="">Hospital Universitário</option></select></label></div>
+<div class="form-divider"></div>
+<div class="form-section"><span class="section-number">2</span><div><h2>Etapas iniciais</h2><p>Organize o percurso previsto para o paciente.</p></div></div>
+<div class="stage-builder"><div class="stage-row"><span>1</span><input aria-label="Nome da etapa 1" class="stage-name" required="" value="Avaliação inicial no hospital"/><select aria-label="Responsável pela etapa 1" class="stage-owner"><option selected="">Equipe hospitalar</option><option>Laboratório</option><option>Especialista</option><option>Secretariado</option></select><button aria-label="Mover etapa para baixo" class="move-stage" title="Mover etapa para baixo" type="button">↓</button></div><div class="stage-row"><span>2</span><input aria-label="Nome da etapa 2" class="stage-name" required="" value="Exames laboratoriais"/><select aria-label="Responsável pela etapa 2" class="stage-owner"><option>Equipe hospitalar</option><option selected="">Laboratório</option><option>Especialista</option><option>Secretariado</option></select><button aria-label="Mover etapa para baixo" class="move-stage" title="Mover etapa para baixo" type="button">↓</button></div><div class="stage-row"><span>3</span><input aria-label="Nome da etapa 3" class="stage-name" required="" value="Consulta com especialista"/><select aria-label="Responsável pela etapa 3" class="stage-owner"><option>Equipe hospitalar</option><option>Laboratório</option><option selected="">Especialista</option><option>Secretariado</option></select><button aria-label="Mover etapa para baixo" class="move-stage" title="Mover etapa para baixo" type="button">↓</button></div><button class="add-stage" type="button">＋ Adicionar etapa</button></div>
+<div class="form-actions"><button class="ghost-button" data-screen="professional-history" type="button">Cancelar</button><button class="primary-button" type="submit">Criar jornada</button></div>
+</form>
+</div>
+<aside class="form-summary"><span class="eyebrow teal">RESUMO</span><h2>Nova jornada</h2><div class="summary-patient"><span class="avatar">MC</span><span><strong>Maria da Conceição</strong><small>CNS · •••• 4821</small></span></div><dl><div><dt>Tipo</dt><dd>Especializado</dd></div><div><dt>Etapas</dt><dd>3 definidas</dd></div><div><dt>Responsável</dt><dd>Hospital Universitário</dd></div></dl><div class="info-box">Após salvar, a jornada ficará disponível para o paciente em qualquer navegador conectado ao servidor.</div></aside>
+</div>
+</section>
+<section aria-labelledby="professional-manage-title" class="screen professional-screen" id="professional-manage">
+<div class="breadcrumb"><button data-screen="professional-history">← Histórico da paciente</button><span>/</span><span>JN-2048</span></div>
+<div class="manage-heading"><div><span class="status-pill active-status"><i></i> Em andamento</span><h1 id="professional-manage-title">Acompanhamento cardiológico</h1><p>Maria da Conceição Costa · JN-2048</p></div><div class="manage-actions"><button class="ghost-button" id="open-situation-modal">Alterar situação</button><button class="primary-button" id="open-update-modal">Atualizar etapa</button></div></div>
+<div class="manage-grid">
+<article class="manage-timeline">
+<div class="section-heading"><div><span class="eyebrow">LINHA DO TEMPO</span><h2>Etapas da jornada</h2></div><span class="count-pill">3 de 6</span></div>
+<div class="linear-timeline">
+<button class="linear-step done"><span>✓</span><div><small>28 AGO 2026</small><strong>Encaminhamento recebido</strong><p>Registrado pela Hospital Universitário</p></div><em>Concluído</em></button>
+<button class="linear-step done"><span>✓</span><div><small>03 SET 2026</small><strong>Triagem cardiológica</strong><p>Enf. Carla Reis</p></div><em>Concluído</em></button>
+<button class="linear-step current"><span>3</span><div><small>ETAPA ATUAL</small><strong>Eletrocardiograma</strong><p>Agendado para 24 set., às 09:30</p></div><em>Agendado</em></button>
+<button class="linear-step"><span>4</span><div><small>PRÓXIMA ETAPA</small><strong>Consulta cardiológica</strong><p>Prevista para 02 out.</p></div><em>Aguardando</em></button>
+<button class="linear-step"><span>5</span><div><small>ETAPA FUTURA</small><strong>Avaliação e diagnóstico</strong><p>Sem data definida</p></div><em>Aguardando</em></button>
+<button class="linear-step"><span>6</span><div><small>ETAPA FINAL</small><strong>Plano de acompanhamento</strong><p>Sem data definida</p></div><em>Aguardando</em></button>
+</div>
+</article>
+<aside class="manage-aside"><div class="manage-info"><span class="eyebrow teal">ETAPA SELECIONADA</span><h2>Eletrocardiograma</h2><dl><div><dt>Responsável</dt><dd>Setor de Cardiologia</dd></div><div><dt>Data</dt><dd>24 set. · 09:30</dd></div><div><dt>Estado</dt><dd><span class="status-pill scheduled">Agendado</span></dd></div></dl></div><div class="open-pending"><div><span>!</span><strong>Pendência aberta</strong></div><p>Paciente deve levar documento com foto.</p><small>Responsável: paciente</small></div><div class="situation-card"><span class="eyebrow teal">SITUAÇÃO DA JORNADA</span><h2>Em andamento</h2><p>As alterações de situação registram motivo, data, horário e profissional.</p><div class="situation-history"></div></div><div class="audit-note"><span>✓</span><p>Alterações registradas no servidor, com autoria, data e horário.</p></div></aside>
+</div>
+</section>
 
-        <section id="patient-journey" class="screen" aria-labelledby="patient-journey-title">
-              <div class="breadcrumb"><button data-screen="patient-home">← Início</button><span>/</span><span class="journey-breadcrumb-title">Acompanhamento cardiológico</span></div>
-          <div class="journey-heading">
-              <div><span class="status-pill active-status"><i></i> Em andamento</span><h1 id="patient-journey-title">Acompanhamento cardiológico</h1><p class="journey-subtitle">Hospital Universitário · Iniciada em 28 de agosto de 2026</p></div>
-            <div class="journey-code"><span>Jornada</span><strong>JN-2048</strong></div>
-          </div>
-          <div class="situation-banner" id="patient-situation-banner" hidden></div>
 
-          <div class="journey-layout">
-            <article class="timeline-card">
-              <div class="timeline-header"><div><span class="eyebrow teal">SUA JORNADA</span><h2>Você está na etapa 3 de 6</h2><p class="journey-hint">2 de 6 etapas concluídas. Selecione uma etapa para ver os detalhes.</p></div><div class="progress-ring" role="img" aria-label="2 de 6 etapas concluídas, 33 por cento"><span>33%</span></div></div>
-              <div class="timeline-canvas">
-                <svg class="journey-path desktop-path" viewBox="0 0 1000 240" preserveAspectRatio="none" aria-hidden="true">
-                  <path class="path-shadow" d="M90 104 C170 104 170 150 250 150 S330 94 410 94 S490 150 570 150 S650 100 730 100 S810 146 890 146" />
-                  <path class="path-done" d="M90 104 C170 104 170 150 250 150 S330 94 410 94" />
-                </svg>
-                <svg class="journey-path mobile-path" viewBox="0 0 400 1020" preserveAspectRatio="none" aria-hidden="true">
-                  <path class="path-shadow" d="M96 80 C96 160 304 160 304 260 S96 340 96 440 S304 520 304 620 S96 700 96 800 S304 880 304 980" />
-                  <path class="path-done" d="M96 80 C96 160 304 160 304 260 S96 340 96 440" />
-                </svg>
+</main>
+</div>
+<div aria-hidden="true" class="modal-backdrop" id="update-modal">
+<section aria-labelledby="modal-title" aria-modal="true" class="modal" role="dialog">
+<div class="modal-header"><div><span class="eyebrow teal">ATUALIZAR ETAPA</span><h2 id="modal-title">Eletrocardiograma</h2></div><button aria-label="Fechar" class="modal-close">×</button></div>
+<form id="update-form">
+<label>Etapa<select id="update-stage"></select></label>
+<label>Novo estado<select id="stage-status"><option>Aguardando</option><option>Agendado</option><option>Em andamento</option><option>Concluído</option><option>Pendente</option><option>Devolvido</option></select></label>
+<label>Data do registro (automática)<input id="update-date" readonly="" required="" type="date"/></label>
+<label>Data prevista/realizada da etapa<input id="stage-date" type="date"/></label>
+<label>Responsável<input id="update-owner" required=""/></label>
+<label class="full">Observação<textarea id="update-observation" placeholder="Registre uma observação objetiva..." rows="3"></textarea></label>
+<label class="check-row full"><input id="has-pending" type="checkbox"/><span><strong>Esta atualização gera uma pendência</strong><small>Informe o motivo e quem precisa agir.</small></span></label>
+<div class="pending-fields full hidden" id="pending-fields"><label>Motivo da pendência<input id="pending-reason" value="Documento de identificação necessário"/></label><label>Responsável pela ação<select id="pending-owner"><option selected="">Paciente</option><option>Equipe hospitalar</option><option>Secretariado</option></select></label><label class="full">Ação necessária<input id="pending-action" value="Leve um documento com foto no dia do exame."/></label><label>Prazo (se houver)<input id="pending-due" type="date"/></label><label class="check-row"><input checked="" id="pending-blocking" type="checkbox"/> Esta pendência impede o avanço da etapa</label></div>
+<label class="check-row full hidden" id="resolve-pending-row"><input id="resolve-pending" type="checkbox"/><span><strong>Resolver pendência aberta</strong><small>Registra a resolução antes de avançar a etapa.</small></span></label>
+<div class="modal-actions full"><button class="ghost-button modal-cancel" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar atualização</button></div>
+</form>
+</section>
+</div>
+<div aria-hidden="true" class="modal-backdrop" id="situation-modal">
+<section aria-labelledby="situation-modal-title" aria-modal="true" class="modal situation-modal" role="dialog">
+<div class="modal-header"><div><span class="eyebrow teal">RF012 · SITUAÇÃO DA JORNADA</span><h2 id="situation-modal-title">Alterar situação</h2></div><button aria-label="Fechar" class="modal-close situation-close" type="button">×</button></div>
+<p class="situation-current">Situação atual: <strong>Em andamento</strong></p>
+<form id="situation-form">
+<label>Ação<select id="situation-action" required=""></select></label>
+<label class="full">Motivo da alteração<textarea id="situation-reason" maxlength="500" placeholder="Explique por que a jornada terá sua situação alterada" required="" rows="4"></textarea></label>
+<p class="situation-rule full"></p>
+<p class="situation-audit full">A alteração será registrada com data, horário e profissional responsável.</p>
+<div class="modal-actions full"><button class="ghost-button situation-cancel" type="button">Cancelar</button><button class="primary-button" type="submit">Confirmar alteração</button></div>
+</form>
+</section>
+</div>
 
-                <button class="timeline-node done n1" data-step="referral"><span class="node-dot">✓</span><span class="node-copy"><small>28 AGO</small><strong>Encaminhamento recebido</strong><em>Concluído</em></span></button>
-                <button class="timeline-node done n2" data-step="triage"><span class="node-dot">✓</span><span class="node-copy"><small>03 SET</small><strong>Triagem cardiológica</strong><em>Concluído</em></span></button>
-                <button class="timeline-node current n3 selected" data-step="exam" aria-current="step"><span class="current-callout">VOCÊ ESTÁ AQUI</span><span class="pulse"></span><span class="node-dot">3</span><span class="node-copy"><small>ETAPA ATUAL</small><strong>Eletrocardiograma</strong><em>Agendado para 24 set.</em></span></button>
-                <button class="timeline-node next n4" data-step="consult"><span class="node-dot">4</span><span class="node-copy"><small>PRÓXIMA</small><strong>Consulta cardiológica</strong><em>Prevista para 02 out.</em></span></button>
-                <button class="timeline-node future n5" data-step="diagnosis"><span class="node-dot">5</span><span class="node-copy"><small>DEPOIS</small><strong>Avaliação e diagnóstico</strong><em>Aguardando</em></span></button>
-                <button class="timeline-node future n6" data-step="followup"><span class="node-dot">6</span><span class="node-copy"><small>ETAPA FINAL</small><strong>Plano de acompanhamento</strong><em>Aguardando</em></span></button>
-              </div>
-            </article>
 
-            <aside class="detail-panel" aria-live="polite">
-              <div class="panel-accent"></div>
-              <div class="detail-top"><span class="eyebrow teal">ETAPA SELECIONADA</span><span class="status-pill scheduled">Agendado</span></div>
-              <h2 class="detail-title">Eletrocardiograma</h2>
-              <p class="detail-summary">Exame que registra a atividade elétrica do coração e ajuda na avaliação cardiológica.</p>
-              <div class="detail-list">
-                <div><span class="detail-icon">▣</span><span><small>Data prevista ou realizada</small><strong>24 de setembro</strong></span></div>
-                <div><span class="detail-icon">⌖</span><span><small>Local</small><strong>Hospital Universitário — Bloco B</strong></span></div>
-                <div><span class="detail-icon">♙</span><span><small>Responsável</small><strong>Setor de Cardiologia</strong></span></div>
-              </div>
-              <div class="pending-box"><div class="pending-title"><span>!</span><strong>Antes de ir</strong></div><p>Leve um documento com foto e chegue com 15 minutos de antecedência.</p></div>
-              <p class="detail-source">Informações registradas pela equipe de saúde.</p>
-              <footer>Dados simulados · Salvos neste navegador</footer>
-            </aside>
-          </div>
-        </section>
-
-        <section id="professional-search" class="screen professional-screen" aria-labelledby="professional-search-title">
-          <div class="page-heading compact">
-            <div><span class="eyebrow teal">ÁREA PROFISSIONAL</span><h1 id="professional-search-title">Buscar paciente</h1><p>Localize um paciente para consultar suas jornadas de cuidado.</p></div>
-          </div>
-          <div class="search-panel">
-            <label for="patient-search">Nome, CNS ou identificador do paciente</label>
-            <div class="search-box"><span>⌕</span><input id="patient-search" value="Maria" placeholder="Digite para pesquisar" /><button id="search-button">Buscar</button></div>
-            <p class="privacy-note">Demonstração com um único paciente sintético. Os dados ficam neste navegador.</p>
-          </div>
-          <div class="results-wrap">
-            <div class="section-heading"><div><span class="eyebrow">RESULTADOS</span><h2>1 paciente encontrado</h2></div></div>
-            <button class="patient-result" data-screen="professional-history">
-              <span class="avatar large">MC</span>
-              <span class="patient-info"><strong>Maria da Conceição Costa</strong><small>CNS simulado · •••• 4821</small></span>
-              <span class="patient-meta"><small>Data de nascimento</small><strong>14/03/1978</strong></span>
-              <span class="patient-meta"><small>Jornadas ativas</small><strong>2</strong></span>
-              <span class="result-arrow">→</span>
-            </button>
-          </div>
-        </section>
-
-        <section id="professional-history" class="screen professional-screen" aria-labelledby="professional-history-title">
-          <div class="breadcrumb"><button data-screen="professional-search">← Busca</button><span>/</span><span>Maria da Conceição Costa</span></div>
-          <div class="patient-header">
-            <span class="avatar xlarge">MC</span>
-            <div><span class="eyebrow teal">PACIENTE</span><h1 id="professional-history-title">Maria da Conceição Costa</h1><p>CNS simulado · •••• 4821 &nbsp;·&nbsp; 48 anos</p></div>
-            <button class="primary-button" data-screen="professional-create">＋ Criar nova jornada</button>
-          </div>
-          <div class="stat-strip">
-            <div><small>Jornadas ativas</small><strong>2</strong></div><div><small>Pendências abertas</small><strong class="warning-text">1</strong></div><div><small>Último atendimento</small><strong>18 set. 2026</strong></div><div><small>Unidade de referência</small><strong>UBS Centro</strong></div>
-          </div>
-          <div class="content-grid">
-            <div>
-              <div class="section-heading"><div><span class="eyebrow">ACOMPANHAMENTO</span><h2>Jornadas de cuidado</h2></div></div>
-              <div id="professional-journeys"><article class="professional-journey-card" data-screen="professional-manage">
-                <div class="pj-icon">♥</div><div class="pj-main"><div><span class="status-pill active-status"><i></i> Em andamento</span><small>JN-2048</small></div><h3>Acompanhamento cardiológico</h3><p>Etapa atual: eletrocardiograma · 3 de 6 etapas</p><div class="mini-progress"><span style="width: 33%"></span></div></div><span class="result-arrow">→</span>
-              </article>
-              <article class="professional-journey-card">
-                <div class="pj-icon alt">◉</div><div class="pj-main"><div><span class="status-pill waiting"><i></i> Aguardando</span><small>JN-1832</small></div><h3>Acompanhamento oftalmológico</h3><p>Etapa atual: encaminhamento à oftalmologia · 1 de 4 etapas</p><div class="mini-progress"><span style="width: 0%"></span></div></div><span class="result-arrow">→</span>
-              </article>
-              </div>
-            </div>
-            <aside class="activity-card"><span class="eyebrow">ATIVIDADE RECENTE</span><h2>Histórico resumido</h2><div class="activity-item"><span></span><div><strong>Consulta registrada</strong><small>18 set. · Dr. Eduardo Lima</small></div></div><div class="activity-item"><span></span><div><strong>Exame agendado</strong><small>16 set. · Secretariado</small></div></div><div class="activity-item"><span></span><div><strong>Triagem concluída</strong><small>03 set. · Enf. Carla Reis</small></div></div></aside>
-          </div>
-        </section>
-
-        <section id="professional-create" class="screen professional-screen" aria-labelledby="professional-create-title">
-          <div class="breadcrumb"><button data-screen="professional-history">← Maria da Conceição</button><span>/</span><span>Nova jornada</span></div>
-          <div class="form-layout">
-            <div class="form-main">
-              <div class="page-heading compact"><div><span class="eyebrow teal">NOVA JORNADA</span><h1 id="professional-create-title">Criar jornada de cuidado</h1><p>Defina o objetivo e as etapas iniciais do acompanhamento.</p></div></div>
-              <form id="create-journey-form" class="form-card">
-                <div class="form-section"><span class="section-number">1</span><div><h2>Informações gerais</h2><p>Identifique o motivo principal do acompanhamento.</p></div></div>
-                <div class="form-grid"><label>Paciente<input value="Maria da Conceição Costa" disabled /></label><label>Tipo de jornada<select id="journey-type" required><option value="">Selecione</option><option selected>Acompanhamento especializado</option><option>Exames e diagnóstico</option><option>Tratamento continuado</option></select></label><label class="full">Nome da jornada<input id="journey-name" value="Acompanhamento endocrinológico" required /></label><label>Data de início<input id="journey-start" type="date" required /></label><label>Unidade responsável<select id="journey-unit" required><option selected>UBS Centro</option><option>Hospital Universitário</option></select></label></div>
-                <div class="form-divider"></div>
-                <div class="form-section"><span class="section-number">2</span><div><h2>Etapas iniciais</h2><p>Organize o percurso previsto para o paciente.</p></div></div>
-                <div class="stage-builder"><div class="stage-row"><span>1</span><input class="stage-name" value="Avaliação inicial na UBS" aria-label="Nome da etapa 1" required /><select class="stage-owner" aria-label="Responsável pela etapa 1"><option selected>Equipe APS</option><option>Laboratório</option><option>Especialista</option><option>Secretariado</option></select><button type="button" class="move-stage" aria-label="Mover etapa para baixo" title="Mover etapa para baixo">↓</button></div><div class="stage-row"><span>2</span><input class="stage-name" value="Exames laboratoriais" aria-label="Nome da etapa 2" required /><select class="stage-owner" aria-label="Responsável pela etapa 2"><option>Equipe APS</option><option selected>Laboratório</option><option>Especialista</option><option>Secretariado</option></select><button type="button" class="move-stage" aria-label="Mover etapa para baixo" title="Mover etapa para baixo">↓</button></div><div class="stage-row"><span>3</span><input class="stage-name" value="Consulta com especialista" aria-label="Nome da etapa 3" required /><select class="stage-owner" aria-label="Responsável pela etapa 3"><option>Equipe APS</option><option>Laboratório</option><option selected>Especialista</option><option>Secretariado</option></select><button type="button" class="move-stage" aria-label="Mover etapa para baixo" title="Mover etapa para baixo">↓</button></div><button type="button" class="add-stage">＋ Adicionar etapa</button></div>
-                <div class="form-actions"><button type="button" class="ghost-button" data-screen="professional-history">Cancelar</button><button type="submit" class="primary-button">Criar jornada</button></div>
-              </form>
-            </div>
-            <aside class="form-summary"><span class="eyebrow teal">RESUMO</span><h2>Nova jornada</h2><div class="summary-patient"><span class="avatar">MC</span><span><strong>Maria da Conceição</strong><small>CNS · •••• 4821</small></span></div><dl><div><dt>Tipo</dt><dd>Especializado</dd></div><div><dt>Etapas</dt><dd>3 definidas</dd></div><div><dt>Responsável</dt><dd>UBS Centro</dd></div></dl><div class="info-box">Após salvar, a jornada ficará disponível para o paciente neste navegador.</div></aside>
-          </div>
-        </section>
-
-        <section id="professional-manage" class="screen professional-screen" aria-labelledby="professional-manage-title">
-          <div class="breadcrumb"><button data-screen="professional-history">← Histórico da paciente</button><span>/</span><span>JN-2048</span></div>
-          <div class="manage-heading"><div><span class="status-pill active-status"><i></i> Em andamento</span><h1 id="professional-manage-title">Acompanhamento cardiológico</h1><p>Maria da Conceição Costa · JN-2048</p></div><div class="manage-actions"><button class="ghost-button" id="open-situation-modal">Alterar situação</button><button class="primary-button" id="open-update-modal">Atualizar etapa</button></div></div>
-          <div class="manage-grid">
-            <article class="manage-timeline">
-              <div class="section-heading"><div><span class="eyebrow">LINHA DO TEMPO</span><h2>Etapas da jornada</h2></div><span class="count-pill">3 de 6</span></div>
-              <div class="linear-timeline">
-                <button class="linear-step done"><span>✓</span><div><small>28 AGO 2026</small><strong>Encaminhamento recebido</strong><p>Registrado pela UBS Centro</p></div><em>Concluído</em></button>
-                <button class="linear-step done"><span>✓</span><div><small>03 SET 2026</small><strong>Triagem cardiológica</strong><p>Enf. Carla Reis</p></div><em>Concluído</em></button>
-                <button class="linear-step current"><span>3</span><div><small>ETAPA ATUAL</small><strong>Eletrocardiograma</strong><p>Agendado para 24 set., às 09:30</p></div><em>Agendado</em></button>
-                <button class="linear-step"><span>4</span><div><small>PRÓXIMA ETAPA</small><strong>Consulta cardiológica</strong><p>Prevista para 02 out.</p></div><em>Aguardando</em></button>
-                <button class="linear-step"><span>5</span><div><small>ETAPA FUTURA</small><strong>Avaliação e diagnóstico</strong><p>Sem data definida</p></div><em>Aguardando</em></button>
-                <button class="linear-step"><span>6</span><div><small>ETAPA FINAL</small><strong>Plano de acompanhamento</strong><p>Sem data definida</p></div><em>Aguardando</em></button>
-              </div>
-            </article>
-            <aside class="manage-aside"><div class="manage-info"><span class="eyebrow teal">ETAPA SELECIONADA</span><h2>Eletrocardiograma</h2><dl><div><dt>Responsável</dt><dd>Setor de Cardiologia</dd></div><div><dt>Data</dt><dd>24 set. · 09:30</dd></div><div><dt>Estado</dt><dd><span class="status-pill scheduled">Agendado</span></dd></div></dl></div><div class="open-pending"><div><span>!</span><strong>Pendência aberta</strong></div><p>Paciente deve levar documento com foto.</p><small>Responsável: paciente</small></div><div class="situation-card"><span class="eyebrow teal">SITUAÇÃO DA JORNADA</span><h2>Em andamento</h2><p>As alterações de situação registram motivo, data, horário e profissional.</p><div class="situation-history"></div></div><div class="audit-note"><span>✓</span><p>Alterações desta demonstração ficam registradas neste navegador.</p></div></aside>
-          </div>
-        </section>
-
-        <section id="secretariat-referrals" class="screen professional-screen" aria-labelledby="secretariat-referrals-title">
-          <div class="page-heading compact">
-            <div><span class="eyebrow teal">SECRETARIADO ADMINISTRATIVO · RF013</span><h1 id="secretariat-referrals-title">Encaminhamentos internos</h1><p>Registre e acompanhe o envio entre setores do hospital.</p></div>
-            <button class="primary-button" id="open-referral-modal" type="button">＋ Novo encaminhamento</button>
-          </div>
-          <div class="referral-stats" aria-label="Resumo dos encaminhamentos">
-            <div><small>Em andamento</small><strong id="referral-open-count">0</strong></div>
-            <div><small>Agendados</small><strong id="referral-scheduled-count">0</strong></div>
-            <div><small>Devolvidos</small><strong id="referral-returned-count">0</strong></div>
-          </div>
-          <div class="section-heading"><div><span class="eyebrow">REGISTROS</span><h2>Encaminhamentos recentes</h2></div><span class="count-pill" id="referral-total-count">0 registros</span></div>
-          <div class="referral-list" id="referral-list" aria-live="polite"></div>
-          <p class="demo-note">Dados de demonstração. Cada alteração mostra quem atualizou e quando.</p>
-        </section>
-      </main>
-    </div>
-
-    <div class="modal-backdrop" id="update-modal" aria-hidden="true">
-      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="modal-header"><div><span class="eyebrow teal">ATUALIZAR ETAPA</span><h2 id="modal-title">Eletrocardiograma</h2></div><button class="modal-close" aria-label="Fechar">×</button></div>
-        <form id="update-form">
-          <label>Etapa<select id="update-stage"></select></label>
-          <label>Novo estado<select id="stage-status"><option>Aguardando</option><option>Agendado</option><option>Em andamento</option><option>Concluído</option><option>Pendente</option><option>Devolvido</option></select></label>
-          <label>Data da atualização<input id="update-date" type="date" required /></label>
-          <label>Data prevista/realizada da etapa<input id="stage-date" type="date" /></label>
-          <label>Responsável<input id="update-owner" required /></label>
-          <label class="full">Observação<textarea id="update-observation" rows="3" placeholder="Registre uma observação objetiva..."></textarea></label>
-          <label class="check-row full"><input type="checkbox" id="has-pending" /><span><strong>Esta atualização gera uma pendência</strong><small>Informe o motivo e quem precisa agir.</small></span></label>
-          <div class="pending-fields full hidden" id="pending-fields"><label>Motivo da pendência<input id="pending-reason" value="Documento de identificação necessário" /></label><label>Responsável pela ação<select id="pending-owner"><option selected>Paciente</option><option>Equipe APS</option><option>Secretariado</option></select></label><label class="full">Ação necessária<input id="pending-action" value="Leve um documento com foto no dia do exame." /></label><label>Prazo (se houver)<input id="pending-due" type="date" /></label></div>
-          <label class="check-row full hidden" id="resolve-pending-row"><input type="checkbox" id="resolve-pending" /><span><strong>Resolver pendência aberta</strong><small>Registra a resolução antes de avançar a etapa.</small></span></label>
-          <div class="modal-actions full"><button type="button" class="ghost-button modal-cancel">Cancelar</button><button type="submit" class="primary-button">Salvar atualização</button></div>
-        </form>
-      </section>
-    </div>
-
-    <div class="modal-backdrop" id="situation-modal" aria-hidden="true">
-      <section class="modal situation-modal" role="dialog" aria-modal="true" aria-labelledby="situation-modal-title">
-        <div class="modal-header"><div><span class="eyebrow teal">RF012 · SITUAÇÃO DA JORNADA</span><h2 id="situation-modal-title">Alterar situação</h2></div><button class="modal-close situation-close" type="button" aria-label="Fechar">×</button></div>
-        <p class="situation-current">Situação atual: <strong>Em andamento</strong></p>
-        <form id="situation-form">
-          <label>Ação<select id="situation-action" required></select></label>
-          <label class="full">Motivo da alteração<textarea id="situation-reason" rows="4" maxlength="500" placeholder="Explique por que a jornada terá sua situação alterada" required></textarea></label>
-          <p class="situation-rule full"></p>
-          <p class="situation-audit full">A alteração será registrada com data, horário e profissional responsável.</p>
-          <div class="modal-actions full"><button type="button" class="ghost-button situation-cancel">Cancelar</button><button type="submit" class="primary-button">Confirmar alteração</button></div>
-        </form>
-      </section>
-    </div>
-
-    <div class="modal-backdrop" id="referral-modal" aria-hidden="true">
-      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="referral-modal-title">
-        <div class="modal-header"><div><span class="eyebrow teal">RF013 · FLUXO INTERNO</span><h2 id="referral-modal-title">Novo encaminhamento</h2></div><button class="modal-close" id="referral-modal-close" type="button" aria-label="Fechar">×</button></div>
-        <form id="referral-form">
-          <label>Paciente<input id="referral-patient" required placeholder="Nome do paciente" /></label>
-          <label>Jornada<input id="referral-journey" required value="JN-2048" /></label>
-          <label>Etapa ou procedimento<input id="referral-stage" required placeholder="Ex.: Eletrocardiograma" /></label>
-          <label>Destino<input id="referral-destination" required placeholder="Especialidade ou setor" /></label>
-          <label>Data da solicitação<input id="referral-date" type="date" required /></label>
-          <label>Situação<select id="referral-status"><option>Solicitado</option><option>Aguardando agendamento</option><option>Agendado</option><option>Realizado</option><option>Devolvido</option></select></label>
-          <label class="full hidden" id="referral-reason-wrap">Motivo da devolução<textarea id="referral-reason" rows="3" placeholder="Explique o que precisa ser corrigido"></textarea></label>
-          <div class="modal-actions full"><button type="button" class="ghost-button" id="referral-cancel">Cancelar</button><button type="submit" class="primary-button" id="referral-submit">Salvar encaminhamento</button></div>
-        </form>
-      </section>
-    </div>
-
-    <div class="toast" role="status" aria-live="polite"><span>✓</span><div><strong>Alteração salva</strong><small>A jornada foi atualizada com sucesso.</small></div></div>
-    <script src="./model.js?v=fluxsus-secretariat-20261121"></script>
-    <script src="./app.js?v=fluxsus-secretariat-20261121"></script>
-  </body>
+<div aria-live="polite" class="toast" role="status"><span>✓</span><div><strong>Alteração salva</strong><small>A jornada foi atualizada com sucesso.</small></div></div>
+<script src="./model.js"></script>
+<script src="./formatacao.js"></script>
+<script src="./api.js"></script>
+<script src="./sincronizacao.js"></script>
+<script src="./app.js"></script>
+</body>
 </html>
