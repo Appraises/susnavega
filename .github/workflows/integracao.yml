@@ -1,0 +1,42 @@
+name: Verificar FLUXSUS
+on:
+  push:
+    branches: [main, 'feature/**', 'fix/**', 'chore/**', 'test/**', 'docs/**']
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: fluxsus_test
+          POSTGRES_USER: fluxsus
+          POSTGRES_PASSWORD: senha_apenas_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fluxsus -d fluxsus_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://fluxsus:senha_apenas_ci@127.0.0.1:5432/fluxsus_test
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.15.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run verificar
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-artifact@v6
+        with:
+          name: fluxsus-p3
+          path: pacote/
+          retention-days: 7
