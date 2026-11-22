@@ -5,6 +5,7 @@ const { join } = require('node:path');
 const { criarConexao, prepararBanco, transacao } = require('./banco.js');
 const { entrar, sair, identificarUsuario, cookieSessao, usuarioParaTela } = require('./autenticacao.js');
 const { exigir } = require('./validacao.js');
+const { consultarEstado } = require('./consultas.js');
 
 function criarAplicacao(banco, opcoes = {}) {
   const aplicacao = express();
@@ -56,6 +57,13 @@ function criarAplicacao(banco, opcoes = {}) {
   aplicacao.post('/api/sair', async (requisicao, resposta) => {
     await sair(banco, requisicao);
     resposta.set('Set-Cookie', cookieSessao('', opcoes.cookieSeguro)).json({ mensagem: 'Sessão encerrada.' });
+  });
+  aplicacao.get('/api/estado', async (requisicao, resposta) => {
+    const estado = await transacao(banco, async (conexao) => {
+      await conexao.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
+      return consultarEstado(conexao, requisicao.usuario, requisicao.query.paciente);
+    });
+    resposta.json(estado);
   });
   aplicacao.use('/api', (requisicao, resposta) => resposta.status(404).json({ mensagem: 'Operação não encontrada.' }));
   aplicacao.use(express.static(join(__dirname, '../dist'), { dotfiles: 'deny', index: 'index.html' }));
