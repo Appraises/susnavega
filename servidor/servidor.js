@@ -6,7 +6,7 @@ const { criarConexao, prepararBanco, transacao } = require('./banco.js');
 const { entrar, sair, identificarUsuario, cookieSessao, usuarioParaTela } = require('./autenticacao.js');
 const { exigir } = require('./validacao.js');
 const { consultarEstado, buscarPacientes } = require('./consultas.js');
-const { criarJornada, atualizarEtapa } = require('./jornadas.js');
+const { criarJornada, atualizarEtapa, alterarSituacao } = require('./jornadas.js');
 
 function criarAplicacao(banco, opcoes = {}) {
   const aplicacao = express();
@@ -73,6 +73,10 @@ function criarAplicacao(banco, opcoes = {}) {
   });
   aplicacao.put('/api/jornadas/:jornada/etapas/:etapa', async (requisicao, resposta) => {
     const id = await transacao(banco, (conexao) => atualizarEtapa(conexao, requisicao.usuario, requisicao.params.jornada, requisicao.params.etapa, requisicao.body || {}));
+    resposta.json({ id });
+  });
+  aplicacao.post('/api/jornadas/:jornada/situacao', async (requisicao, resposta) => {
+    const id = await transacao(banco, (conexao) => alterarSituacao(conexao, requisicao.usuario, requisicao.params.jornada, requisicao.body || {}));
     resposta.json({ id });
   });
   aplicacao.use('/api', (requisicao, resposta) => resposta.status(404).json({ mensagem: 'Operação não encontrada.' }));

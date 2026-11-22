@@ -135,4 +135,26 @@ async function atualizarEtapa(conexao, usuario, jornadaId, etapaId, dados) {
   return salvarEtapas(conexao, jornada, usuario, tituloEvento, { stageId: etapa.id, before: anterior, after: etapa });
 }
 
-module.exports = { carregarJornada, conferirVersao, exigirJornadaAberta, validarDependencias, pendenciasAbertas, registrarEvento, salvarEtapas, criarJornada, atualizarEtapa };
+async function alterarSituacao(conexao, usuario, id, dados) {
+  permitir(usuario, 'profissional');
+  const jornada = await carregarJornada(conexao, id, true);
+  conferirVersao(jornada, dados.versao);
+  const anterior = jornada.situacao;
+  const motivo = texto(dados.motivo, 'motivo');
+  if (dados.acao === 'suspender') {
+    exigir(anterior === 'Ativa', 'Somente uma jornada ativa pode ser suspensa.', 409);
+    jornada.situacao = 'Suspensa';
+  } else if (dados.acao === 'reabrir') {
+    exigir(['Suspensa', 'Concluída'].includes(anterior), 'Esta jornada não pode ser reaberta.', 409);
+    jornada.situacao = 'Ativa';
+  } else if (dados.acao === 'concluir') {
+    exigir(anterior === 'Ativa', 'A jornada precisa estar ativa para ser concluída.', 409);
+    exigir(jornada.etapas.every((etapa) => etapa.status === 'Concluído'), 'Conclua todas as etapas antes de concluir a jornada.');
+    exigir(!jornada.etapas.some((etapa) => pendenciasAbertas(etapa).some((pendencia) => pendencia.blocking !== false)), 'Resolva as pendências impeditivas.');
+    jornada.situacao = 'Concluída';
+  } else exigir(false, 'Ação inválida.');
+  // Reabrir altera somente a jornada: os estados das etapas são preservados.
+  return salvarEtapas(conexao, jornada, usuario, `${anterior} → ${jornada.situacao}`, { type: 'journey-situation', from: anterior, to: jornada.situacao, reason: motivo });
+}
+
+module.exports = { carregarJornada, conferirVersao, exigirJornadaAberta, validarDependencias, pendenciasAbertas, registrarEvento, salvarEtapas, criarJornada, atualizarEtapa, alterarSituacao };
