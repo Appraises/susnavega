@@ -39,16 +39,12 @@ function criarAplicacao(banco, opcoes = {}) {
     for (const [endereco, tentativa] of tentativas) if (tentativa.ate < agora) tentativas.delete(endereco);
     const tentativa = tentativas.get(chave) || { quantidade: 0, ate: agora + 15 * 60 * 1000 };
     exigir(tentativa.quantidade < 15, 'Muitas tentativas. Aguarde 15 minutos.', 429);
-    try {
-      const acesso = await entrar(banco, requisicao.body || {});
-      tentativas.delete(chave);
-      resposta.set('Set-Cookie', cookieSessao(acesso.token, opcoes.cookieSeguro));
-      resposta.json({ usuario: usuarioParaTela(acesso.usuario) });
-    } catch (erro) {
-      tentativa.quantidade += 1;
-      tentativas.set(chave, tentativa);
-      throw erro;
-    }
+    tentativa.quantidade += 1;
+    tentativas.set(chave, tentativa);
+    const acesso = await entrar(banco, requisicao.body || {});
+    tentativas.delete(chave);
+    resposta.set('Set-Cookie', cookieSessao(acesso.token, opcoes.cookieSeguro));
+    resposta.json({ usuario: usuarioParaTela(acesso.usuario) });
   });
   aplicacao.use('/api', async (requisicao, resposta, proximo) => {
     requisicao.usuario = await identificarUsuario(banco, requisicao);
