@@ -76,31 +76,15 @@ let professionalJourneyId = patientJourneyId;
 let patientStageId = null;
 let professionalStageId = null;
 
-function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>"']/g, (character) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  })[character]);
-}
 
-function parseLocalDate(value) {
-  if (!value) return null;
-  const [year, month, day] = value.split('-').map(Number);
-  return year && month && day ? new Date(year, month - 1, day) : null;
-}
 
-function longDate(value) {
-  const date = parseLocalDate(value);
-  return date ? new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }).format(date) : 'Ainda não definida';
-}
 
-function shortDate(value) {
-  const date = parseLocalDate(value);
-  return date ? new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(date) : 'Sem data';
-}
 
-function eventDate(value) {
-  return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value));
-}
+
+
+
+
+
 
 function referralStatusClass(status) {
   if (status === 'Devolvido') return 'returned';
@@ -115,18 +99,18 @@ function renderReferrals() {
   list.innerHTML = referrals.map((referral) => `
     <article class="referral-card">
       <div>
-        <div class="referral-card-top"><span class="referral-code">${escapeHtml(referral.id)} · ${escapeHtml(referral.journey)}</span><span class="status-pill ${referralStatusClass(referral.status)}"><i></i>${escapeHtml(referral.status)}</span></div>
-        <h3>${escapeHtml(referral.stage)}</h3>
-        <p class="referral-patient">${escapeHtml(referral.patient)}</p>
+        <div class="referral-card-top"><span class="referral-code">${escaparHtml(referral.id)} · ${escaparHtml(referral.journey)}</span><span class="status-pill ${referralStatusClass(referral.status)}"><i></i>${escaparHtml(referral.status)}</span></div>
+        <h3>${escaparHtml(referral.stage)}</h3>
+        <p class="referral-patient">${escaparHtml(referral.patient)}</p>
       </div>
-      <button class="referral-update" type="button" data-update-referral="${escapeHtml(referral.id)}">Atualizar situação</button>
+      <button class="referral-update" type="button" data-update-referral="${escaparHtml(referral.id)}">Atualizar situação</button>
       <div class="referral-details">
-        <div><small>Destino</small><strong>${escapeHtml(referral.destination)}</strong></div>
-        <div><small>Solicitado em</small><strong>${escapeHtml(new Date(`${referral.date}T12:00:00`).toLocaleDateString('pt-BR'))}</strong></div>
-        <div><small>Atualizado por</small><strong>${escapeHtml(referral.updatedBy)}</strong></div>
-        <div><small>Última alteração</small><strong>${escapeHtml(eventDate(referral.updatedAt))}</strong></div>
+        <div><small>Destino</small><strong>${escaparHtml(referral.destination)}</strong></div>
+        <div><small>Solicitado em</small><strong>${escaparHtml(new Date(`${referral.date}T12:00:00`).toLocaleDateString('pt-BR'))}</strong></div>
+        <div><small>Atualizado por</small><strong>${escaparHtml(referral.updatedBy)}</strong></div>
+        <div><small>Última alteração</small><strong>${escaparHtml(dataDoEvento(referral.updatedAt))}</strong></div>
       </div>
-      ${referral.reason ? `<p class="referral-reason"><strong>Motivo da devolução:</strong> ${escapeHtml(referral.reason)}</p>` : ''}
+      ${referral.reason ? `<p class="referral-reason"><strong>Motivo da devolução:</strong> ${escaparHtml(referral.reason)}</p>` : ''}
     </article>`).join('');
   document.querySelector('#referral-open-count').textContent = String(referrals.filter((item) => !['Realizado', 'Devolvido'].includes(item.status)).length);
   document.querySelector('#referral-scheduled-count').textContent = String(referrals.filter((item) => item.status === 'Agendado').length);
@@ -151,7 +135,7 @@ function statusClass(status) {
 }
 
 function statusPill(status) {
-  return `<span class="status-pill ${statusClass(status)}"><i></i>${escapeHtml(status)}</span>`;
+  return `<span class="status-pill ${statusClass(status)}"><i></i>${escaparHtml(status)}</span>`;
 }
 
 function journeySymbol(journey) {
@@ -238,13 +222,13 @@ function renderPatientHome() {
     const info = progress(journey);
     const next = Model.nextStep(journey);
     const symbol = journeySymbol(journey);
-    return `<article class="journey-card featured" role="button" tabindex="0" data-screen="patient-journey" data-journey-id="${escapeHtml(journey.id)}" aria-label="Abrir ${escapeHtml(journey.title)}">
-      <div class="card-top">${statusPill(Model.journeyStatus(journey))}<span class="card-code">${escapeHtml(journey.id)}</span></div>
+    return `<article class="journey-card featured" role="button" tabindex="0" data-screen="patient-journey" data-journey-id="${escaparHtml(journey.id)}" aria-label="Abrir ${escaparHtml(journey.title)}">
+      <div class="card-top">${statusPill(Model.journeyStatus(journey))}<span class="card-code">${escaparHtml(journey.id)}</span></div>
       <div class="journey-symbol ${symbol.css}" aria-hidden="true">${symbol.glyph}</div>
-      <h3>${escapeHtml(journey.title)}</h3><p>${escapeHtml(journey.unit)} · ${escapeHtml(journey.type)}</p>
+      <h3>${escaparHtml(journey.title)}</h3><p>${escaparHtml(journey.unit)} · ${escaparHtml(journey.type)}</p>
       <div class="mini-progress"><span style="width:${info.percent}%"></span></div>
-      <div class="card-progress-label"><span>${info.completed} de ${info.total} concluídas</span><strong>${escapeHtml(next.kind === 'complete' ? 'Concluída' : next.kind === 'paused' ? 'Jornada suspensa' : next.kind === 'awaiting-completion' ? 'Aguardando conclusão' : next.kind === 'pending' ? next.owner === 'Paciente' ? 'Ação necessária' : `Aguardando ${next.owner}` : `Próximo: ${next.title}`)}</strong></div>
-      <footer><span>Atualizada ${escapeHtml(shortDate(journey.updatedAt.slice(0, 10)))}</span><span class="card-link">Ver jornada →</span></footer>
+      <div class="card-progress-label"><span>${info.completed} de ${info.total} concluídas</span><strong>${escaparHtml(next.kind === 'complete' ? 'Concluída' : next.kind === 'paused' ? 'Jornada suspensa' : next.kind === 'awaiting-completion' ? 'Aguardando conclusão' : next.kind === 'pending' ? next.owner === 'Paciente' ? 'Ação necessária' : `Aguardando ${next.owner}` : `Próximo: ${next.title}`)}</strong></div>
+      <footer><span>Atualizada ${escaparHtml(dataResumida(journey.updatedAt.slice(0, 10)))}</span><span class="card-link">Ver jornada →</span></footer>
     </article>`;
   }).join('') : '<p class="empty-state">Nenhuma jornada nesta categoria.</p>';
 
@@ -291,7 +275,7 @@ function renderNotifications() {
   badge.textContent = String(items.length);
   badge.hidden = !items.length;
   notificationPanel.querySelector('.notification-list').innerHTML = items.length
-    ? items.map(({ journey, pending }) => `<button type="button" class="notification-item" role="listitem" data-notification-journey="${escapeHtml(journey.id)}" data-notification-stage="${escapeHtml(pending.stageId)}"><span>!</span><span><strong>${escapeHtml(pending.action)}</strong><small>${escapeHtml(journey.title)} · ${escapeHtml(pending.stageTitle)}</small><em>Motivo: ${escapeHtml(pending.reason)} · Responsável: ${escapeHtml(pending.owner)}</em></span></button>`).join('')
+    ? items.map(({ journey, pending }) => `<button type="button" class="notification-item" role="listitem" data-notification-journey="${escaparHtml(journey.id)}" data-notification-stage="${escaparHtml(pending.stageId)}"><span>!</span><span><strong>${escaparHtml(pending.action)}</strong><small>${escaparHtml(journey.title)} · ${escaparHtml(pending.stageTitle)}</small><em>Motivo: ${escaparHtml(pending.reason)} · Responsável: ${escaparHtml(pending.owner)}</em></span></button>`).join('')
     : '<p class="notification-empty">Nenhuma pendência aberta para este perfil.</p>';
 }
 
@@ -318,7 +302,7 @@ function renderPatientJourney() {
   const screen = document.querySelector('#patient-journey');
   screen.querySelector('.journey-breadcrumb-title').textContent = journey.title;
   screen.querySelector('#patient-journey-title').textContent = journey.title;
-  screen.querySelector('.journey-subtitle').textContent = `${journey.unit} · Iniciada em ${longDate(journey.startDate)}`;
+  screen.querySelector('.journey-subtitle').textContent = `${journey.unit} · Iniciada em ${dataPorExtenso(journey.startDate)}`;
   screen.querySelector('.journey-heading .status-pill').outerHTML = statusPill(Model.journeyStatus(journey));
   screen.querySelector('.journey-code strong').textContent = journey.id;
   const situation = Model.journeyStatus(journey);
@@ -331,7 +315,7 @@ function renderPatientJourney() {
   situationBanner.hidden = !['Suspensa', 'Concluída', 'Aguardando conclusão'].includes(situation);
   situationBanner.classList.toggle('is-complete', situation !== 'Suspensa');
   if (!situationBanner.hidden) situationBanner.innerHTML = situation === 'Suspensa'
-    ? `<strong>Jornada suspensa pela equipe</strong>${escapeHtml(journey.situationReason || 'Aguarde a equipe de saúde informar a retomada.')}`
+    ? `<strong>Jornada suspensa pela equipe</strong>${escaparHtml(journey.situationReason || 'Aguarde a equipe de saúde informar a retomada.')}`
     : situation === 'Concluída' ? '<strong>Jornada concluída</strong>O acompanhamento desta jornada foi finalizado pela equipe.'
       : '<strong>Etapas concluídas</strong>A equipe ainda precisa confirmar formalmente a conclusão da jornada.';
 
@@ -349,11 +333,11 @@ function renderPatientJourney() {
       const pendingItem = (stage.pending || []).find((item) => item.status === 'Aberta');
       const pending = Boolean(pendingItem);
       const stateClass = stage.status === 'Concluído' ? 'done' : index === current ? 'current' : 'future';
-      const label = index === current ? situation === 'Suspensa' ? 'JORNADA SUSPENSA' : 'ETAPA ATUAL' : stage.status === 'Concluído' ? shortDate(stage.date).toUpperCase() : 'PRÓXIMA ETAPA';
-      return `<button type="button" class="timeline-node dynamic-node ${stateClass} ${pending ? 'has-pending' : ''} ${stage.id === patientStageId ? 'selected' : ''}" data-stage-id="${escapeHtml(stage.id)}" style="--desktop-left:${desktop[index].x / 10 - 8}%;--desktop-top:${desktop[index].y - 26}px;--mobile-left:${index % 2 ? 54 : 2}%;--mobile-top:${48 + index * 180}px" ${index === current ? 'aria-current="step"' : ''}>
+      const label = index === current ? situation === 'Suspensa' ? 'JORNADA SUSPENSA' : 'ETAPA ATUAL' : stage.status === 'Concluído' ? dataResumida(stage.date).toUpperCase() : 'PRÓXIMA ETAPA';
+      return `<button type="button" class="timeline-node dynamic-node ${stateClass} ${pending ? 'has-pending' : ''} ${stage.id === patientStageId ? 'selected' : ''}" data-stage-id="${escaparHtml(stage.id)}" style="--desktop-left:${desktop[index].x / 10 - 8}%;--desktop-top:${desktop[index].y - 26}px;--mobile-left:${index % 2 ? 54 : 2}%;--mobile-top:${48 + index * 180}px" ${index === current ? 'aria-current="step"' : ''}>
         ${index === current ? `<span class="current-callout">${situation === 'Suspensa' ? 'SUSPENSA' : pending ? pendingItem.owner === 'Paciente' ? 'AÇÃO NECESSÁRIA' : 'PENDÊNCIA DA EQUIPE' : 'VOCÊ ESTÁ AQUI'}</span><span class="pulse"></span>` : ''}
         <span class="node-dot">${stage.status === 'Concluído' ? '✓' : index + 1}</span>
-        <span class="node-copy"><small>${escapeHtml(label)}</small><strong>${escapeHtml(stage.title)}</strong><em>${escapeHtml(pending ? `Pendência: ${pendingItem.owner}` : stage.status === 'Agendado' && stage.date ? `Agendado para ${shortDate(stage.date)}` : stage.status)}</em></span>
+        <span class="node-copy"><small>${escaparHtml(label)}</small><strong>${escaparHtml(stage.title)}</strong><em>${escaparHtml(pending ? `Pendência: ${pendingItem.owner}` : stage.status === 'Agendado' && stage.date ? `Agendado para ${dataResumida(stage.date)}` : stage.status)}</em></span>
       </button>`;
     }).join('')}`;
   renderPatientDetail(journey);
@@ -367,16 +351,16 @@ function renderPatientDetail(journey) {
   panel.querySelector('.detail-title').textContent = stage.title;
   panel.querySelector('.detail-summary').textContent = stage.summary || 'Etapa registrada pela equipe responsável.';
   const details = panel.querySelectorAll('.detail-list strong');
-  details[0].textContent = longDate(stage.date);
+  details[0].textContent = dataPorExtenso(stage.date);
   details[1].textContent = stage.location || journey.unit;
   details[2].textContent = stage.owner;
   const pending = (stage.pending || []).find((item) => item.status === 'Aberta');
   const box = panel.querySelector('.pending-box');
   box.classList.toggle('neutral', !pending);
   box.innerHTML = pending
-    ? `<div class="pending-title"><span>!</span><strong>Pendência aberta</strong></div><dl><div><dt>Motivo</dt><dd>${escapeHtml(pending.reason)}</dd></div><div><dt>Ação necessária</dt><dd>${escapeHtml(pending.action)}</dd></div><div><dt>Responsável</dt><dd>${escapeHtml(pending.owner)}</dd></div>${pending.dueDate ? `<div><dt>Prazo</dt><dd>${escapeHtml(longDate(pending.dueDate))}</dd></div>` : ''}</dl>`
-    : `<div class="pending-title"><span>✓</span><strong>Sem pendência aberta</strong></div><p>${escapeHtml(stage.observation || stage.note || 'Nenhuma ação adicional registrada para esta etapa.')}</p>`;
-  panel.querySelector('footer').textContent = `Última atualização: ${eventDate(journey.updatedAt)} · Dados simulados`;
+    ? `<div class="pending-title"><span>!</span><strong>Pendência aberta</strong></div><dl><div><dt>Motivo</dt><dd>${escaparHtml(pending.reason)}</dd></div><div><dt>Ação necessária</dt><dd>${escaparHtml(pending.action)}</dd></div><div><dt>Responsável</dt><dd>${escaparHtml(pending.owner)}</dd></div>${pending.dueDate ? `<div><dt>Prazo</dt><dd>${escaparHtml(dataPorExtenso(pending.dueDate))}</dd></div>` : ''}</dl>`
+    : `<div class="pending-title"><span>✓</span><strong>Sem pendência aberta</strong></div><p>${escaparHtml(stage.observation || stage.note || 'Nenhuma ação adicional registrada para esta etapa.')}</p>`;
+  panel.querySelector('footer').textContent = `Última atualização: ${dataDoEvento(journey.updatedAt)} · Dados simulados`;
 }
 
 function renderSearch() {
@@ -394,21 +378,21 @@ function renderProfessionalHistory() {
   const stats = document.querySelectorAll('.stat-strip strong');
   stats[0].textContent = String(active);
   stats[1].textContent = String(pending);
-  stats[2].textContent = state.events[0] ? eventDate(state.events[0].at) : '—';
+  stats[2].textContent = state.events[0] ? dataDoEvento(state.events[0].at) : '—';
   stats[3].textContent = state.patient.unit;
   document.querySelector('#professional-journeys').innerHTML = state.journeys.map((journey) => {
     const info = progress(journey);
     const stage = journey.stages[Model.currentIndex(journey) === -1 ? journey.stages.length - 1 : Model.currentIndex(journey)];
     const situation = Model.journeyStatus(journey);
     const symbol = journeySymbol(journey);
-    return `<article class="professional-journey-card" role="button" tabindex="0" data-screen="professional-manage" data-journey-id="${escapeHtml(journey.id)}" aria-label="Gerenciar ${escapeHtml(journey.title)}">
-      <div class="pj-icon ${symbol.css === 'eye' ? 'alt' : ''}">${symbol.glyph}</div><div class="pj-main"><div>${statusPill(situation)}<small>${escapeHtml(journey.id)}</small></div>
-      <h3>${escapeHtml(journey.title)}</h3><p>${escapeHtml(situation === 'Concluída' ? 'Jornada concluída' : situation === 'Aguardando conclusão' ? 'Etapas concluídas · confirmação pendente' : situation === 'Suspensa' ? `Suspensa · etapa ${info.position} de ${info.total}` : `Etapa atual: ${stage.title} · ${info.position} de ${info.total} etapas`)} · ${info.completed} concluídas</p><div class="mini-progress"><span style="width:${info.percent}%"></span></div></div><span class="result-arrow">→</span>
+    return `<article class="professional-journey-card" role="button" tabindex="0" data-screen="professional-manage" data-journey-id="${escaparHtml(journey.id)}" aria-label="Gerenciar ${escaparHtml(journey.title)}">
+      <div class="pj-icon ${symbol.css === 'eye' ? 'alt' : ''}">${symbol.glyph}</div><div class="pj-main"><div>${statusPill(situation)}<small>${escaparHtml(journey.id)}</small></div>
+      <h3>${escaparHtml(journey.title)}</h3><p>${escaparHtml(situation === 'Concluída' ? 'Jornada concluída' : situation === 'Aguardando conclusão' ? 'Etapas concluídas · confirmação pendente' : situation === 'Suspensa' ? `Suspensa · etapa ${info.position} de ${info.total}` : `Etapa atual: ${stage.title} · ${info.position} de ${info.total} etapas`)} · ${info.completed} concluídas</p><div class="mini-progress"><span style="width:${info.percent}%"></span></div></div><span class="result-arrow">→</span>
     </article>`;
   }).join('');
   const activity = document.querySelector('.activity-card');
   activity.querySelectorAll('.activity-item').forEach((item) => item.remove());
-  activity.insertAdjacentHTML('beforeend', state.events.slice(0, 4).map((item) => `<div class="activity-item"><span></span><div><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(eventDate(item.at))} · ${escapeHtml(item.actor)}</small></div></div>`).join(''));
+  activity.insertAdjacentHTML('beforeend', state.events.slice(0, 4).map((item) => `<div class="activity-item"><span></span><div><strong>${escaparHtml(item.title)}</strong><small>${escaparHtml(dataDoEvento(item.at))} · ${escaparHtml(item.actor)}</small></div></div>`).join(''));
 }
 
 function renderProfessionalManage() {
@@ -428,22 +412,22 @@ function renderProfessionalManage() {
   screen.querySelector('.manage-timeline .count-pill').textContent = `${info.completed} de ${info.total} concluídas`;
   screen.querySelector('#open-update-modal').disabled = ['Suspensa', 'Concluída'].includes(situation);
   screen.querySelector('#open-update-modal').title = ['Suspensa', 'Concluída'].includes(situation) ? 'Reabra a jornada antes de atualizar uma etapa.' : '';
-  screen.querySelector('.linear-timeline').innerHTML = journey.stages.map((stage, index) => `<button type="button" class="linear-step ${stage.status === 'Concluído' ? 'done' : index === current ? 'current' : ''} ${stage.id === professionalStageId ? 'selected' : ''}" data-stage-id="${escapeHtml(stage.id)}"><span>${stage.status === 'Concluído' ? '✓' : index + 1}</span><div><small>${escapeHtml(stage.date ? shortDate(stage.date).toUpperCase() : index === current ? 'ETAPA ATUAL' : 'SEM DATA')}</small><strong>${escapeHtml(stage.title)}</strong><p>${escapeHtml(stage.owner)}</p></div><em>${escapeHtml(stage.status)}</em></button>`).join('');
+  screen.querySelector('.linear-timeline').innerHTML = journey.stages.map((stage, index) => `<button type="button" class="linear-step ${stage.status === 'Concluído' ? 'done' : index === current ? 'current' : ''} ${stage.id === professionalStageId ? 'selected' : ''}" data-stage-id="${escaparHtml(stage.id)}"><span>${stage.status === 'Concluído' ? '✓' : index + 1}</span><div><small>${escaparHtml(stage.date ? dataResumida(stage.date).toUpperCase() : index === current ? 'ETAPA ATUAL' : 'SEM DATA')}</small><strong>${escaparHtml(stage.title)}</strong><p>${escaparHtml(stage.owner)}</p></div><em>${escaparHtml(stage.status)}</em></button>`).join('');
   const pending = (selected.pending || []).find((item) => item.status === 'Aberta');
   screen.querySelector('.manage-info h2').textContent = selected.title;
   const values = screen.querySelectorAll('.manage-info dd');
   values[0].textContent = selected.owner;
-  values[1].textContent = longDate(selected.date);
+  values[1].textContent = dataPorExtenso(selected.date);
   values[2].innerHTML = statusPill(selected.status);
   const box = screen.querySelector('.open-pending');
   box.classList.toggle('neutral', !pending);
   box.innerHTML = pending
-    ? `<div><span>!</span><strong>Pendência aberta</strong></div><dl><div><dt>Motivo</dt><dd>${escapeHtml(pending.reason)}</dd></div><div><dt>Ação</dt><dd>${escapeHtml(pending.action)}</dd></div><div><dt>Responsável</dt><dd>${escapeHtml(pending.owner)}</dd></div></dl>`
+    ? `<div><span>!</span><strong>Pendência aberta</strong></div><dl><div><dt>Motivo</dt><dd>${escaparHtml(pending.reason)}</dd></div><div><dt>Ação</dt><dd>${escaparHtml(pending.action)}</dd></div><div><dt>Responsável</dt><dd>${escaparHtml(pending.owner)}</dd></div></dl>`
     : '<div><span>✓</span><strong>Sem pendência aberta</strong></div><p>Esta etapa não possui uma ação pendente.</p>';
   screen.querySelector('.situation-card h2').textContent = situation;
   const situationEvent = state.events.find((event) => event.journeyId === journey.id && event.type === 'journey-situation');
   screen.querySelector('.situation-history').innerHTML = situationEvent
-    ? `<strong>Última alteração: ${escapeHtml(situationEvent.from)} → ${escapeHtml(situationEvent.to)}</strong><small>Motivo: ${escapeHtml(situationEvent.reason)}</small><small>${escapeHtml(situationEvent.actor)} · ${escapeHtml(eventDate(situationEvent.at))}</small>`
+    ? `<strong>Última alteração: ${escaparHtml(situationEvent.from)} → ${escaparHtml(situationEvent.to)}</strong><small>Motivo: ${escaparHtml(situationEvent.reason)}</small><small>${escaparHtml(situationEvent.actor)} · ${escaparHtml(dataDoEvento(situationEvent.at))}</small>`
     : '<small>Nenhuma mudança de situação registrada nesta jornada.</small>';
 }
 
@@ -563,7 +547,7 @@ function openModal() {
     return;
   }
   focusBeforeModal = document.activeElement;
-  document.querySelector('#update-stage').innerHTML = journey.stages.map((stage) => `<option value="${escapeHtml(stage.id)}">${escapeHtml(stage.title)}</option>`).join('');
+  document.querySelector('#update-stage').innerHTML = journey.stages.map((stage) => `<option value="${escaparHtml(stage.id)}">${escaparHtml(stage.title)}</option>`).join('');
   fillModalStage();
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
