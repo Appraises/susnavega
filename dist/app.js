@@ -5,118 +5,25 @@ const screens = [...document.querySelectorAll('.screen')];
 const menuButton = document.querySelector('.mobile-menu');
 const modal = document.getElementById('update-modal');
 const situationModal = document.getElementById('situation-modal');
-const referralModal = document.getElementById('referral-modal');
-const notificationPanel = document.getElementById('notification-panel');
 const createForm = document.getElementById('create-journey-form');
 const updateForm = document.getElementById('update-form');
 const situationForm = document.getElementById('situation-form');
-const referralForm = document.getElementById('referral-form');
-const referralStatus = document.getElementById('referral-status');
-const referralReason = document.getElementById('referral-reason');
-const referralReasonWrap = document.getElementById('referral-reason-wrap');
 const pendingToggle = document.getElementById('has-pending');
 const pendingFields = document.getElementById('pending-fields');
 const resolveToggle = document.getElementById('resolve-pending');
 let toastTimer;
 let focusBeforeModal;
 let showCompleted = false;
-const SESSION_KEY = 'fluxsus-demo-session';
-const REFERRAL_STORAGE_KEY = 'fluxsus-referrals-v1';
 const PATIENT_SCREENS = new Set(['patient-home', 'patient-journey']);
 const PROFESSIONAL_SCREENS = new Set(['professional-search', 'professional-history', 'professional-create', 'professional-manage']);
-const SECRETARIAT_SCREENS = new Set(['secretariat-referrals']);
+let session = null;
+let state = estadoVazio();
+let versaoEdicao = null;
 
-function loadSession() {
-  try {
-    const saved = JSON.parse(sessionStorage.getItem(SESSION_KEY));
-    if (saved && ['patient', 'professional', 'secretariat'].includes(saved.role) && saved.name && saved.initials) return saved;
-  } catch (_) { /* The demo remains usable without session persistence. */ }
-  return null;
-}
-
-function loadState() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(Model.STORAGE_KEY));
-    if ([1, 2].includes(saved?.version) && saved.patient?.id && Array.isArray(saved.journeys) && Array.isArray(saved.events)) {
-      const migrated = Model.normalizeState(saved);
-      if (JSON.stringify(migrated) !== JSON.stringify(saved)) {
-        try { localStorage.setItem(Model.STORAGE_KEY, JSON.stringify(migrated)); }
-        catch (_) { /* Preserve the existing journey in memory if storage is restricted. */ }
-      }
-      return migrated;
-    }
-  } catch (_) { /* Storage may be unavailable in a restricted browser. */ }
-  const initial = Model.seedState();
-  try { localStorage.setItem(Model.STORAGE_KEY, JSON.stringify(initial)); } catch (_) { /* Keep the demo in memory. */ }
-  return initial;
-}
-
-let state = loadState();
-let session = loadSession();
-function seedReferrals() {
-  return [
-    { id: 'ENC-0027', patient: 'Maria da Conceição Costa', journey: 'JN-2048', stage: 'Eletrocardiograma', destination: 'Cardiologia · Hospital Universitário', date: '2026-09-16', status: 'Agendado', reason: '', updatedBy: 'João Lima · Secretariado', updatedAt: '2026-09-18T11:14:00.000Z' },
-    { id: 'ENC-0026', patient: 'João Pedro Lima', journey: 'JN-1832', stage: 'Avaliação oftalmológica', destination: 'Oftalmologia · Clínica Escola', date: '2026-09-19', status: 'Devolvido', reason: 'O documento recebido está ilegível. Pedir um novo arquivo.', updatedBy: 'João Lima · Secretariado', updatedAt: '2026-09-20T17:32:00.000Z' },
-    { id: 'ENC-0025', patient: 'Maria da Conceição Costa', journey: 'JN-2048', stage: 'Consulta cardiológica', destination: 'Ambulatório 4 · Hospital Universitário', date: '2026-09-20', status: 'Aguardando agendamento', reason: '', updatedBy: 'João Lima · Secretariado', updatedAt: '2026-09-20T13:05:00.000Z' }
-  ];
-}
-function loadReferrals() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(REFERRAL_STORAGE_KEY));
-    if (Array.isArray(saved)) return saved;
-  } catch (_) { /* Keep the synthetic demonstration available without storage. */ }
-  const initial = seedReferrals();
-  try { localStorage.setItem(REFERRAL_STORAGE_KEY, JSON.stringify(initial)); } catch (_) { /* Keep referrals in memory. */ }
-  return initial;
-}
-let referrals = loadReferrals();
-let editingReferralId = null;
 let patientJourneyId = state.journeys[0]?.id;
 let professionalJourneyId = patientJourneyId;
 let patientStageId = null;
 let professionalStageId = null;
-
-
-
-
-
-
-
-
-
-
-
-function referralStatusClass(status) {
-  if (status === 'Devolvido') return 'returned';
-  if (status === 'Realizado') return 'complete';
-  if (status === 'Agendado') return 'scheduled';
-  return 'waiting';
-}
-
-function renderReferrals() {
-  const list = document.querySelector('#referral-list');
-  if (!list) return;
-  list.innerHTML = referrals.map((referral) => `
-    <article class="referral-card">
-      <div>
-        <div class="referral-card-top"><span class="referral-code">${escaparHtml(referral.id)} · ${escaparHtml(referral.journey)}</span><span class="status-pill ${referralStatusClass(referral.status)}"><i></i>${escaparHtml(referral.status)}</span></div>
-        <h3>${escaparHtml(referral.stage)}</h3>
-        <p class="referral-patient">${escaparHtml(referral.patient)}</p>
-      </div>
-      <button class="referral-update" type="button" data-update-referral="${escaparHtml(referral.id)}">Atualizar situação</button>
-      <div class="referral-details">
-        <div><small>Destino</small><strong>${escaparHtml(referral.destination)}</strong></div>
-        <div><small>Solicitado em</small><strong>${escaparHtml(new Date(`${referral.date}T12:00:00`).toLocaleDateString('pt-BR'))}</strong></div>
-        <div><small>Atualizado por</small><strong>${escaparHtml(referral.updatedBy)}</strong></div>
-        <div><small>Última alteração</small><strong>${escaparHtml(dataDoEvento(referral.updatedAt))}</strong></div>
-      </div>
-      ${referral.reason ? `<p class="referral-reason"><strong>Motivo da devolução:</strong> ${escaparHtml(referral.reason)}</p>` : ''}
-    </article>`).join('');
-  document.querySelector('#referral-open-count').textContent = String(referrals.filter((item) => !['Realizado', 'Devolvido'].includes(item.status)).length);
-  document.querySelector('#referral-scheduled-count').textContent = String(referrals.filter((item) => item.status === 'Agendado').length);
-  document.querySelector('#referral-returned-count').textContent = String(referrals.filter((item) => item.status === 'Devolvido').length);
-  document.querySelector('#referral-total-count').textContent = `${referrals.length} ${referrals.length === 1 ? 'registro' : 'registros'}`;
-}
 
 function findJourney(id) { return state.journeys.find((journey) => journey.id === id); }
 function selectedJourney(id) { return findJourney(id) || state.journeys[0]; }
@@ -130,7 +37,7 @@ function statusClass(status) {
   if (status === 'Pendente' || status === 'Devolvido') return 'pending-status';
   if (status === 'Suspensa') return 'paused-status';
   if (status === 'Aguardando conclusão') return 'ready-status';
-  if (status === 'Aguardando') return 'waiting';
+  if (['Aguardando', 'Planejada'].includes(status)) return 'waiting';
   return 'active-status';
 }
 
@@ -153,35 +60,17 @@ function showToast(title, message) {
   toastTimer = setTimeout(() => toast.classList.remove('show'), 4200);
 }
 
-function saveState(nextState) {
-  try { localStorage.setItem(Model.STORAGE_KEY, JSON.stringify(nextState)); }
-  catch (_) {
-    showToast('Não foi possível salvar', 'O navegador não permitiu armazenar a alteração.');
-    return false;
-  }
-  state = nextState;
-  renderAll();
-  return true;
-}
-
 function closeMenu() {
   document.body.classList.remove('menu-open');
   menuButton.setAttribute('aria-expanded', 'false');
   menuButton.setAttribute('aria-label', 'Abrir menu');
 }
 
-function closeNotifications(restoreFocus = false) {
-  const wasOpen = !notificationPanel.hidden;
-  notificationPanel.hidden = true;
-  document.querySelector('.notification').setAttribute('aria-expanded', 'false');
-  if (restoreFocus && wasOpen) document.querySelector('.notification').focus();
-}
-
 function showLogin() {
   document.querySelector('#auth-screen').hidden = false;
   document.querySelector('.prototype-shell').hidden = true;
-  closeNotifications();
   closeMenu();
+  document.querySelector('.toast').classList.remove('show');
 }
 
 function applySession() {
@@ -189,21 +78,26 @@ function applySession() {
   document.querySelector('#auth-screen').hidden = true;
   document.querySelector('.prototype-shell').hidden = false;
   const professional = session.role === 'professional';
-  const secretariat = session.role === 'secretariat';
-  document.querySelector('.patient-nav').classList.toggle('hidden', professional || secretariat);
+  document.querySelector('.patient-nav').classList.toggle('hidden', professional);
   document.querySelector('.professional-nav').classList.toggle('hidden', !professional);
-  document.querySelector('.secretariat-nav').classList.toggle('hidden', !secretariat);
   document.querySelector('.profile-name').textContent = session.name;
   document.querySelector('.profile-meta').textContent = session.label;
   document.querySelector('.header-profile .avatar').textContent = session.initials;
-  document.querySelector('.session-role').textContent = professional ? 'Profissional' : secretariat ? 'Secretariado' : 'Paciente';
-  showScreen(professional ? 'professional-search' : secretariat ? 'secretariat-referrals' : 'patient-home');
+  document.querySelector('.session-role').textContent = professional ? 'Profissional' : 'Paciente';
+  showScreen(professional ? 'professional-search' : 'patient-home');
 }
 
 function showScreen(id) {
-  const allowed = session?.role === 'professional' ? PROFESSIONAL_SCREENS : session?.role === 'secretariat' ? SECRETARIAT_SCREENS : session?.role === 'patient' ? PATIENT_SCREENS : null;
+  if (!state.journeys.length && id === 'patient-journey') {
+    id = 'patient-home';
+    showToast('Nenhuma jornada', 'A equipe ainda não registrou uma jornada para você.');
+  }
+  if (!state.journeys.length && id === 'professional-manage') {
+    id = 'professional-history';
+    showToast('Nenhuma jornada', 'Crie uma jornada para este paciente antes de gerenciar etapas.');
+  }
+  const allowed = session?.role === 'professional' ? PROFESSIONAL_SCREENS : session?.role === 'patient' ? PATIENT_SCREENS : null;
   if (!allowed?.has(id) || !document.getElementById(id)) return;
-  closeNotifications();
   renderAll();
   screens.forEach((screen) => screen.classList.toggle('active', screen.id === id));
   document.querySelectorAll('.nav-item').forEach((item) => item.classList.toggle('active', item.dataset.screen === id));
@@ -212,6 +106,7 @@ function showScreen(id) {
 }
 
 function renderPatientHome() {
+  document.querySelector('#patient-home h1').textContent = 'Olá, ' + (session?.role === 'patient' ? session.name.split(' ')[0] : state.patient.shortName.split(' ')[0]);
   const active = state.journeys.filter((journey) => Model.journeyStatus(journey) !== 'Concluída');
   const complete = state.journeys.filter((journey) => Model.journeyStatus(journey) === 'Concluída');
   const visible = showCompleted ? complete : active;
@@ -265,18 +160,6 @@ function renderPatientHome() {
   const concludedLink = section.querySelector('.insight-row a');
   concludedLink.hidden = !complete.length && !showCompleted;
   concludedLink.textContent = showCompleted ? 'Ver jornadas em andamento →' : 'Ver jornadas concluídas →';
-}
-
-function renderNotifications() {
-  const items = state.journeys.flatMap((journey) => Model.openPendings(journey)
-    .map((pending) => ({ journey, pending })))
-    .filter(({ journey }) => session?.role === 'professional' || journey.patientId === state.patient.id);
-  const badge = document.querySelector('.notification span');
-  badge.textContent = String(items.length);
-  badge.hidden = !items.length;
-  notificationPanel.querySelector('.notification-list').innerHTML = items.length
-    ? items.map(({ journey, pending }) => `<button type="button" class="notification-item" role="listitem" data-notification-journey="${escaparHtml(journey.id)}" data-notification-stage="${escaparHtml(pending.stageId)}"><span>!</span><span><strong>${escaparHtml(pending.action)}</strong><small>${escaparHtml(journey.title)} · ${escaparHtml(pending.stageTitle)}</small><em>Motivo: ${escaparHtml(pending.reason)} · Responsável: ${escaparHtml(pending.owner)}</em></span></button>`).join('')
-    : '<p class="notification-empty">Nenhuma pendência aberta para este perfil.</p>';
 }
 
 function curvedPath(points, mobile = false) {
@@ -363,16 +246,23 @@ function renderPatientDetail(journey) {
   panel.querySelector('footer').textContent = `Última atualização: ${dataDoEvento(journey.updatedAt)} · Dados simulados`;
 }
 
-function renderSearch() {
-  const query = document.querySelector('#patient-search').value.trim().toLocaleLowerCase('pt-BR');
-  const patient = state.patient;
-  const found = !query || patient.name.toLocaleLowerCase('pt-BR').includes(query) || patient.cns.includes(query);
-  document.querySelector('.results-wrap h2').textContent = found ? '1 paciente encontrado' : 'Nenhum paciente encontrado';
-  document.querySelector('.patient-result').hidden = !found;
-  document.querySelectorAll('.patient-result .patient-meta strong')[1].textContent = String(state.journeys.filter((journey) => Model.journeyStatus(journey) !== 'Concluída').length);
+async function renderSearch() {
+  if (session?.role !== 'professional') return;
+  try {
+    const busca = document.querySelector('#patient-search').value;
+    const pacientes = await requisitarApi('/pacientes?busca=' + encodeURIComponent(busca));
+    if (document.querySelector('#patient-search').value !== busca) return;
+    document.querySelector('.results-wrap h2').textContent = pacientes.length + (pacientes.length === 1 ? ' paciente encontrado' : ' pacientes encontrados');
+    document.querySelectorAll('.results-wrap .patient-result').forEach((item) => item.remove());
+    document.querySelector('.results-wrap').insertAdjacentHTML('beforeend', pacientes.map((paciente) => `<button type="button" class="patient-result" data-escolher-paciente="${escaparHtml(paciente.id)}"><span class="avatar">${escaparHtml(paciente.shortName[0])}</span><span><strong>${escaparHtml(paciente.name)}</strong><small>CNS sintético: ${escaparHtml(paciente.cns)}</small></span><span>Consultar →</span></button>`).join(''));
+  } catch (erro) { showToast('Busca indisponível', erro.message); }
 }
 
 function renderProfessionalHistory() {
+  document.querySelector('#professional-history-title').textContent = state.patient.name;
+  document.querySelector('#professional-history .breadcrumb span:last-child').textContent = state.patient.name;
+  document.querySelector('#professional-history .patient-header p').textContent = 'CNS sintético · ' + state.patient.cns;
+  document.querySelector('#professional-history .avatar').textContent = state.patient.shortName.split(' ').slice(0, 2).map((parte) => parte[0]).join('');
   const active = state.journeys.filter((journey) => Model.journeyStatus(journey) !== 'Concluída').length;
   const pending = state.journeys.reduce((count, journey) => count + Model.openPendings(journey).length, 0);
   const stats = document.querySelectorAll('.stat-strip strong');
@@ -410,6 +300,7 @@ function renderProfessionalManage() {
   screen.querySelector('.manage-heading p').textContent = `${state.patient.name} · ${journey.id}`;
   const info = progress(journey);
   screen.querySelector('.manage-timeline .count-pill').textContent = `${info.completed} de ${info.total} concluídas`;
+  screen.querySelector('#open-situation-modal').disabled = journey.situacao === 'Planejada';
   screen.querySelector('#open-update-modal').disabled = ['Suspensa', 'Concluída'].includes(situation);
   screen.querySelector('#open-update-modal').title = ['Suspensa', 'Concluída'].includes(situation) ? 'Reabra a jornada antes de atualizar uma etapa.' : '';
   screen.querySelector('.linear-timeline').innerHTML = journey.stages.map((stage, index) => `<button type="button" class="linear-step ${stage.status === 'Concluído' ? 'done' : index === current ? 'current' : ''} ${stage.id === professionalStageId ? 'selected' : ''}" data-stage-id="${escaparHtml(stage.id)}"><span>${stage.status === 'Concluído' ? '✓' : index + 1}</span><div><small>${escaparHtml(stage.date ? dataResumida(stage.date).toUpperCase() : index === current ? 'ETAPA ATUAL' : 'SEM DATA')}</small><strong>${escaparHtml(stage.title)}</strong><p>${escaparHtml(stage.owner)}</p></div><em>${escaparHtml(stage.status)}</em></button>`).join('');
@@ -432,6 +323,10 @@ function renderProfessionalManage() {
 }
 
 function renderCreateSummary() {
+  document.querySelector('#professional-create .breadcrumb button').textContent = '← ' + state.patient.shortName;
+  document.querySelector('#professional-create input[disabled]').value = state.patient.name;
+  document.querySelector('.summary-patient strong').textContent = state.patient.shortName;
+  document.querySelector('.summary-patient small').textContent = 'CNS sintético · ' + state.patient.cns;
   const values = document.querySelectorAll('.form-summary dd');
   values[0].textContent = document.querySelector('#journey-type').value || 'Não definido';
   values[1].textContent = `${document.querySelectorAll('.stage-row').length} definidas`;
@@ -445,57 +340,7 @@ function renderAll() {
   renderSearch();
   renderProfessionalHistory();
   renderProfessionalManage();
-  renderReferrals();
   renderCreateSummary();
-  renderNotifications();
-}
-
-function syncReferralReason() {
-  const returned = referralStatus.value === 'Devolvido';
-  referralReasonWrap.classList.toggle('hidden', !returned);
-  referralReason.required = returned;
-}
-
-function openReferralModal(referral = null) {
-  if (session?.role !== 'secretariat') return;
-  editingReferralId = referral?.id || null;
-  focusBeforeModal = document.activeElement;
-  referralForm.reset();
-  const fields = ['referral-patient', 'referral-journey', 'referral-stage', 'referral-destination', 'referral-date'];
-  if (referral) {
-    document.querySelector('#referral-modal-title').textContent = 'Atualizar situação';
-    document.querySelector('#referral-submit').textContent = 'Salvar alteração';
-    document.querySelector('#referral-patient').value = referral.patient;
-    document.querySelector('#referral-journey').value = referral.journey;
-    document.querySelector('#referral-stage').value = referral.stage;
-    document.querySelector('#referral-destination').value = referral.destination;
-    document.querySelector('#referral-date').value = referral.date;
-    referralStatus.value = referral.status;
-    referralReason.value = referral.reason || '';
-    fields.forEach((id) => { document.querySelector(`#${id}`).disabled = true; });
-  } else {
-    document.querySelector('#referral-modal-title').textContent = 'Novo encaminhamento';
-    document.querySelector('#referral-submit').textContent = 'Salvar encaminhamento';
-    document.querySelector('#referral-date').value = Model.localDate(new Date());
-    fields.forEach((id) => { document.querySelector(`#${id}`).disabled = false; });
-  }
-  syncReferralReason();
-  referralModal.classList.add('open');
-  referralModal.setAttribute('aria-hidden', 'false');
-  (referral ? referralStatus : document.querySelector('#referral-patient')).focus();
-}
-
-function closeReferralModal() {
-  referralModal.classList.remove('open');
-  referralModal.setAttribute('aria-hidden', 'true');
-  focusBeforeModal?.focus();
-  editingReferralId = null;
-}
-
-function persistReferrals() {
-  try { localStorage.setItem(REFERRAL_STORAGE_KEY, JSON.stringify(referrals)); }
-  catch (_) { showToast('Não foi possível salvar', 'O navegador não permitiu armazenar o encaminhamento.'); return false; }
-  return true;
 }
 
 function renumberStages() {
@@ -534,11 +379,13 @@ function fillModalStage() {
   document.querySelector('#pending-reason').value = pending?.reason || '';
   document.querySelector('#pending-action').value = pending?.action || '';
   document.querySelector('#pending-owner').value = pending?.owner || 'Paciente';
+  document.querySelector('#pending-blocking').checked = pending?.blocking !== false;
   document.querySelector('#pending-due').value = pending?.dueDate || '';
   togglePendingFields();
 }
 
 function openModal() {
+  versaoEdicao = selectedJourney(professionalJourneyId)?.versao;
   if (session?.role !== 'professional') return;
   const journey = selectedJourney(professionalJourneyId);
   if (!journey) return;
@@ -564,7 +411,7 @@ function situationOptions(journey) {
   const status = Model.journeyStatus(journey);
   if (status === 'Aguardando conclusão') return [{ value: 'complete', label: 'Concluir jornada' }];
   if (['Suspensa', 'Concluída'].includes(status)) return [{ value: 'reopen', label: 'Reabrir jornada' }];
-  return [{ value: 'suspend', label: 'Suspender jornada' }];
+  return journey.situacao === 'Planejada' ? [] : [{ value: 'suspend', label: 'Suspender jornada' }];
 }
 
 function updateSituationRule() {
@@ -574,13 +421,14 @@ function updateSituationRule() {
   const text = action === 'complete'
     ? 'A conclusão só é permitida após todas as etapas serem concluídas e todas as pendências resolvidas.'
     : action === 'reopen' && from === 'Concluída'
-      ? 'Ao reabrir uma jornada concluída, a última etapa volta a “Em andamento” para permitir a continuidade.'
+      ? 'Ao reabrir, a jornada volta a Ativa. As etapas concluídas e o progresso são preservados.'
       : action === 'reopen' ? 'A jornada volta a “Em andamento”; as etapas mantêm seus registros.'
         : 'A jornada ficará suspensa. Etapas não poderão ser atualizadas até a reabertura.';
-  situationModal.querySelector('.situation-rule').textContent = `${text} Regra provisória até a validação de Q02/Q03.`;
+  situationModal.querySelector('.situation-rule').textContent = `${text} Somente o profissional pode alterar a situação da jornada, com motivo registrado.`;
 }
 
 function openSituationModal() {
+  versaoEdicao = selectedJourney(professionalJourneyId)?.versao;
   if (session?.role !== 'professional') return;
   const journey = selectedJourney(professionalJourneyId);
   if (!journey) return;
@@ -602,24 +450,14 @@ function closeSituationModal() {
   focusBeforeModal?.focus();
 }
 
-document.addEventListener('click', (event) => {
-  const referralUpdate = event.target.closest('[data-update-referral]');
-  if (referralUpdate) {
-    const referral = referrals.find((item) => item.id === referralUpdate.dataset.updateReferral);
-    if (referral) openReferralModal(referral);
-    return;
-  }
-  const notificationItem = event.target.closest('.notification-item');
-  if (notificationItem) {
-    if (session?.role === 'professional') {
-      professionalJourneyId = notificationItem.dataset.notificationJourney;
-      professionalStageId = notificationItem.dataset.notificationStage;
-      showScreen('professional-manage');
-    } else {
-      patientJourneyId = notificationItem.dataset.notificationJourney;
-      patientStageId = notificationItem.dataset.notificationStage;
-      showScreen('patient-journey');
-    }
+document.addEventListener('click', async (event) => {
+  const pacienteEscolhido = event.target.closest('[data-escolher-paciente]');
+  if (pacienteEscolhido) {
+    try {
+      await carregarEstado(pacienteEscolhido.dataset.escolherPaciente);
+      patientJourneyId = state.journeys[0]?.id; professionalJourneyId = patientJourneyId;
+      showScreen('professional-history');
+    } catch (erro) { showToast('Não foi possível consultar', erro.message); }
     return;
   }
   const destination = event.target.closest('[data-screen]');
@@ -636,21 +474,18 @@ document.addEventListener('click', (event) => {
   const professionalNode = event.target.closest('#professional-manage .linear-step[data-stage-id]');
   if (professionalNode) { professionalStageId = professionalNode.dataset.stageId; renderProfessionalManage(); return; }
   if (event.target.closest('.insight-row a')) { event.preventDefault(); showCompleted = !showCompleted; renderPatientHome(); }
-  if (!event.target.closest('.notification-wrap')) closeNotifications();
 });
 
 document.addEventListener('keydown', (event) => {
   if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('[role="button"][data-screen]')) {
     event.preventDefault(); event.target.click();
   }
-  const activeModal = referralModal.classList.contains('open') ? referralModal : situationModal.classList.contains('open') ? situationModal : modal.classList.contains('open') ? modal : null;
+  const activeModal = situationModal.classList.contains('open') ? situationModal : modal.classList.contains('open') ? modal : null;
   if (!activeModal) {
-    if (event.key === 'Escape') closeNotifications(true);
     return;
   }
   if (event.key === 'Escape') {
-    if (activeModal === referralModal) closeReferralModal();
-    else if (activeModal === modal) closeModal();
+    if (activeModal === modal) closeModal();
     else closeSituationModal();
     return;
   }
@@ -668,75 +503,43 @@ document.querySelectorAll('.auth-account').forEach((button) => button.addEventLi
   document.querySelector('#auth-error').hidden = true;
   document.querySelector('.auth-submit').focus();
 }));
-document.querySelector('#login-form').addEventListener('submit', (event) => {
-  event.preventDefault();
+document.querySelector('#login-form').addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const botao = document.querySelector('.auth-submit');
+  botao.disabled = true;
   try {
-    session = Model.authenticateDemo(document.querySelector('#login-identifier').value, document.querySelector('#login-password').value);
-    try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (_) { /* Session lasts until this page is closed. */ }
+    const resposta = await requisitarApi('/entrar', 'POST', { email: document.querySelector('#login-identifier').value, senha: document.querySelector('#login-password').value });
+    session = resposta.usuario;
+    state = estadoVazio();
+    await carregarEstado();
     document.querySelector('#auth-error').hidden = true;
     document.querySelector('#login-password').value = '';
     applySession();
-  } catch (error) {
-    const message = document.querySelector('#auth-error');
-    message.textContent = error.message;
-    message.hidden = false;
-  }
+  } catch (erro) {
+    session = null;
+    const mensagem = document.querySelector('#auth-error');
+    mensagem.textContent = erro.message;
+    mensagem.hidden = false;
+  } finally { botao.disabled = false; }
 });
-document.querySelector('.logout-button').addEventListener('click', () => {
-  session = null;
-  try { sessionStorage.removeItem(SESSION_KEY); } catch (_) { /* In-memory session is cleared above. */ }
-  showLogin();
-  document.querySelector('#login-identifier').value = '';
-  document.querySelector('#login-password').value = '';
-  document.querySelector('#login-identifier').focus();
+
+document.querySelector('.logout-button').addEventListener('click', async () => {
+  try {
+    await requisitarApi('/sair', 'POST', {});
+    session = null; state = estadoVazio();
+    showLogin();
+    document.querySelector('#login-identifier').value = '';
+    document.querySelector('#login-password').value = '';
+    document.querySelector('#login-identifier').focus();
+  } catch (erro) { showToast('Não foi possível sair', erro.message); }
 });
+
 menuButton.addEventListener('click', () => {
   const open = document.body.classList.toggle('menu-open');
   menuButton.setAttribute('aria-expanded', String(open));
   menuButton.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
 });
-document.querySelector('.notification').addEventListener('click', () => {
-  notificationPanel.hidden = !notificationPanel.hidden;
-  document.querySelector('.notification').setAttribute('aria-expanded', String(!notificationPanel.hidden));
-  if (!notificationPanel.hidden) notificationPanel.querySelector('.notification-close').focus();
-});
-document.querySelector('.notification-close').addEventListener('click', () => closeNotifications(true));
 document.querySelectorAll('.help-button').forEach((button) => button.addEventListener('click', () => showToast('Demonstração FLUXSUS', 'Entre com uma conta de demonstração. Para trocar de perfil, saia e acesse a outra conta.')));
-
-document.querySelector('#open-referral-modal').addEventListener('click', () => openReferralModal());
-document.querySelector('#referral-modal-close').addEventListener('click', closeReferralModal);
-document.querySelector('#referral-cancel').addEventListener('click', closeReferralModal);
-referralStatus.addEventListener('change', syncReferralReason);
-referralModal.addEventListener('click', (event) => { if (event.target === referralModal) closeReferralModal(); });
-referralForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  if (session?.role !== 'secretariat' || !referralForm.reportValidity()) return;
-  const updating = Boolean(editingReferralId);
-  const now = new Date();
-  const input = {
-    patient: document.querySelector('#referral-patient').value.trim(),
-    journey: document.querySelector('#referral-journey').value.trim(),
-    stage: document.querySelector('#referral-stage').value.trim(),
-    destination: document.querySelector('#referral-destination').value.trim(),
-    date: document.querySelector('#referral-date').value,
-    status: referralStatus.value,
-    reason: referralStatus.value === 'Devolvido' ? referralReason.value.trim() : '',
-    updatedBy: `${session.name} · ${session.label}`,
-    updatedAt: now.toISOString()
-  };
-  if (editingReferralId) {
-    const existing = referrals.find((item) => item.id === editingReferralId);
-    if (!existing) { showToast('Encaminhamento não encontrado', 'Atualize a lista e tente novamente.'); return; }
-    Object.assign(existing, { status: input.status, reason: input.reason, updatedBy: input.updatedBy, updatedAt: input.updatedAt });
-  } else {
-    const nextNumber = Math.max(0, ...referrals.map((item) => Number(item.id.match(/(\d+)$/)?.[1] || 0))) + 1;
-    referrals.unshift({ id: `ENC-${String(nextNumber).padStart(4, '0')}`, ...input });
-  }
-  if (!persistReferrals()) return;
-  renderReferrals();
-  closeReferralModal();
-  showToast(updating ? 'Situação atualizada' : 'Encaminhamento registrado', 'A lista foi atualizada com responsável e horário.');
-});
 
 document.querySelector('#search-button').addEventListener('click', renderSearch);
 document.querySelector('#patient-search').addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); renderSearch(); } });
@@ -746,7 +549,7 @@ document.querySelector('.add-stage').addEventListener('click', () => {
   if (rows.length >= 6) { showToast('Limite da demonstração', 'Esta trilha comporta até 6 etapas.'); return; }
   const row = document.createElement('div');
   row.className = 'stage-row';
-  row.innerHTML = '<span></span><input class="stage-name" placeholder="Nome da etapa" required /><select class="stage-owner"><option>Equipe APS</option><option>Laboratório</option><option>Especialista</option><option>Secretariado</option></select><button type="button" class="move-stage" aria-label="Mover etapa para baixo" title="Mover etapa para baixo">↓</button>';
+  row.innerHTML = '<span></span><input class="stage-name" placeholder="Nome da etapa" required /><select class="stage-owner"><option>Equipe hospitalar</option><option>Laboratório</option><option>Especialista</option><option>Secretariado</option></select><button type="button" class="move-stage" aria-label="Mover etapa para baixo" title="Mover etapa para baixo">↓</button>';
   document.querySelector('.stage-builder').insertBefore(row, document.querySelector('.add-stage'));
   renumberStages();
   row.querySelector('input').focus();
@@ -760,22 +563,24 @@ document.querySelector('.stage-builder').addEventListener('click', (event) => {
 });
 createForm.addEventListener('input', renderCreateSummary);
 createForm.addEventListener('change', renderCreateSummary);
-createForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  if (session?.role !== 'professional') return;
-  if (!createForm.reportValidity()) return;
+createForm.addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  if (session?.role !== 'professional' || !createForm.reportValidity()) return;
   try {
-    const stages = [...createForm.querySelectorAll('.stage-row')].map((row) => ({ title: row.querySelector('.stage-name').value, owner: row.querySelector('.stage-owner').value }));
-    const created = Model.createJourney(state, {
-      title: document.querySelector('#journey-name').value, type: document.querySelector('#journey-type').value,
-      startDate: document.querySelector('#journey-start').value, unit: document.querySelector('#journey-unit').value, stages
+    const linhas = [...createForm.querySelectorAll('.stage-row')];
+    const etapas = linhas.map((linha, indice) => ({
+      nome: linha.querySelector('.stage-name').value, responsavel: linha.querySelector('.stage-owner').value,
+      preRequisitos: indice ? [indice - 1] : []
+    }));
+    const criada = await salvarAlteracao('/jornadas', 'POST', {
+      pacienteId: state.patient.id, titulo: document.querySelector('#journey-name').value,
+      tipo: document.querySelector('#journey-type').value, objetivo: document.querySelector('#journey-objective').value,
+      inicio: document.querySelector('#journey-start').value, unidade: document.querySelector('#journey-unit').value, etapas
     });
-    if (!saveState(created.state)) return;
-    professionalJourneyId = created.journey.id;
-    professionalStageId = created.journey.stages[0].id;
+    professionalJourneyId = criada.id; professionalStageId = null;
     showScreen('professional-manage');
-    showToast('Jornada criada', `${created.journey.title} já aparece também na área do paciente.`);
-  } catch (error) { showToast('Confira a jornada', error.message); }
+    showToast('Jornada criada', 'A jornada planejada já está disponível para o paciente.');
+  } catch (erro) { showToast('Confira a jornada', erro.message); }
 });
 
 document.querySelector('#open-update-modal').addEventListener('click', openModal);
@@ -797,29 +602,23 @@ document.querySelector('#stage-status').addEventListener('change', (event) => {
     togglePendingFields();
   }
 });
-updateForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  if (session?.role !== 'professional') return;
+updateForm.addEventListener('submit', async (evento) => {
+  evento.preventDefault();
   if (!updateForm.reportValidity()) return;
   try {
-    const updated = Model.updateStage(state, professionalJourneyId, professionalStageId, {
-      status: document.querySelector('#stage-status').value,
-      updateDate: document.querySelector('#update-date').value,
-      stageDate: document.querySelector('#stage-date').value,
-      owner: document.querySelector('#update-owner').value,
-      observation: document.querySelector('#update-observation').value,
-      resolvePending: resolveToggle.checked,
-      pending: pendingToggle.checked ? {
-        reason: document.querySelector('#pending-reason').value,
-        action: document.querySelector('#pending-action').value,
-        owner: document.querySelector('#pending-owner').value,
-        dueDate: document.querySelector('#pending-due').value
+    await salvarAlteracao(`/jornadas/${professionalJourneyId}/etapas/${professionalStageId}`, 'PUT', {
+      versao: versaoEdicao, situacao: document.querySelector('#stage-status').value,
+      data: document.querySelector('#stage-date').value, responsavel: document.querySelector('#update-owner').value,
+      observacao: document.querySelector('#update-observation').value, resolverPendencia: resolveToggle.checked,
+      pendencia: pendingToggle.checked ? {
+        motivo: document.querySelector('#pending-reason').value, acao: document.querySelector('#pending-action').value,
+        responsavel: document.querySelector('#pending-owner').value, prazo: document.querySelector('#pending-due').value,
+        bloqueante: document.querySelector('#pending-blocking').checked
       } : null
     });
-    if (!saveState(updated.state)) return;
     closeModal();
-    showToast('Alteração salva', 'Etapa, pendência e próximo passo atualizados também para o paciente.');
-  } catch (error) { showToast('Alteração não salva', error.message); }
+    showToast('Alteração salva', 'Etapa e próximo passo atualizados também para o paciente.');
+  } catch (erro) { showToast('Alteração não salva', erro.message); }
 });
 
 document.querySelector('#open-situation-modal').addEventListener('click', openSituationModal);
@@ -827,26 +626,22 @@ document.querySelector('.situation-close').addEventListener('click', closeSituat
 document.querySelector('.situation-cancel').addEventListener('click', closeSituationModal);
 situationModal.addEventListener('click', (event) => { if (event.target === situationModal) closeSituationModal(); });
 document.querySelector('#situation-action').addEventListener('change', updateSituationRule);
-situationForm.addEventListener('submit', (event) => {
-  event.preventDefault();
+situationForm.addEventListener('submit', async (evento) => {
+  evento.preventDefault();
   if (!situationForm.reportValidity()) return;
   try {
-    const changed = Model.changeJourneySituation(
-      state, professionalJourneyId, document.querySelector('#situation-action').value,
-      document.querySelector('#situation-reason').value, session
-    );
-    if (!saveState(changed.state)) return;
+    const acoes = { suspend: 'suspender', complete: 'concluir', reopen: 'reabrir' };
+    await salvarAlteracao(`/jornadas/${professionalJourneyId}/situacao`, 'POST', {
+      versao: versaoEdicao, acao: acoes[document.querySelector('#situation-action').value], motivo: document.querySelector('#situation-reason').value
+    });
     closeSituationModal();
-    showToast('Situação atualizada', `A jornada está ${Model.journeyStatus(changed.journey).toLowerCase()} e a alteração foi registrada.`);
-  } catch (error) { showToast('Alteração não salva', error.message); }
+    showToast('Situação atualizada', 'A alteração e sua autoria foram registradas no servidor.');
+  } catch (erro) { showToast('Alteração não salva', erro.message); }
 });
 
-window.addEventListener('storage', (event) => {
-  if (event.key === Model.STORAGE_KEY) { state = loadState(); if (session) renderAll(); }
-  if (event.key === REFERRAL_STORAGE_KEY) { referrals = loadReferrals(); if (session?.role === 'secretariat') renderReferrals(); }
-});
+window.addEventListener('focus', atualizarDados);
+setInterval(atualizarDados, 8000);
 
 document.querySelector('#journey-start').value = Model.localDate(new Date());
 renumberStages();
-if (session) applySession();
-else showLogin();
+iniciarAplicacao();
