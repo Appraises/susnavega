@@ -130,6 +130,14 @@ test('RNF005: atualização inválida desfaz pendência, histórico e versão na
   assert.equal((await banco.query('SELECT COUNT(*) FROM historico')).rows[0].count, antes.rows[0].count);
 });
 
+test('RNF005: duas edições simultâneas geram um sucesso e um conflito HTTP 409', async () => {
+  const jornada = await criar();
+  const caminho = `/api/jornadas/${jornada.id}/etapas/${jornada.stages[0].id}`;
+  const respostas = await Promise.all([profissional(caminho, 'PUT', dadosEtapa(jornada, 'Em andamento')), profissional(caminho, 'PUT', dadosEtapa(jornada, 'Agendado'))]);
+  assert.deepEqual(respostas.map((resposta) => resposta.codigo).sort(), [200, 409]);
+  assert.equal((await banco.query('SELECT COUNT(*) FROM historico WHERE jornada_id=$1', [jornada.id])).rows[0].count, '2');
+});
+
 test('RN01/RF002: bloqueio em A preserva B disponível; consulta depende dos dois', async () => {
   let jornada = await criar([
     { nome: 'A', responsavel: 'Equipe', preRequisitos: [] },
@@ -142,6 +150,29 @@ test('RN01/RF002: bloqueio em A preserva B disponível; consulta depende dos doi
   assert.deepEqual(modelo.availableStages(jornada).map((etapa) => etapa.title), ['B']);
   assert.equal(modelo.nextStep(jornada).title, 'B');
   assert.equal((await profissional(`/api/jornadas/${jornada.id}/etapas/${jornada.stages[2].id}`, 'PUT', dadosEtapa(jornada))).codigo, 422);
+});
+
+test('RF012: só profissional altera situação; conclusão exige etapas prontas; reabrir preserva progresso', async () => {
+  let jornada = await criar();
+  const caminho = `/api/jornadas/${jornada.id}/situacao`;
+  assert.equal((await paciente(caminho, 'POST', { versao: jornada.versao, acao: 'reabrir', motivo: 'Teste' })).codigo, 403);
+  assert.equal((await profissional(caminho, 'POST', { versao: jornada.versao, acao: 'concluir', motivo: 'Teste' })).codigo, 409);
+  assert.equal((await profissional(`/api/jornadas/${jornada.id}/etapas/${jornada.stages[0].id}`, 'PUT', dadosEtapa(jornada, 'Em andamento'))).codigo, 200);
+  jornada = (await estado()).journeys.find((item) => item.id === jornada.id);
+  assert.equal((await profissional(caminho, 'POST', { versao: jornada.versao, acao: 'suspender', motivo: 'Aguardar avaliação' })).codigo, 200);
+  jornada = (await estado()).journeys.find((item) => item.id === jornada.id);
+  assert.equal((await profissional(`/api/jornadas/${jornada.id}/etapas/${jornada.stages[0].id}`, 'PUT', dadosEtapa(jornada))).codigo, 409);
+  assert.equal((await profissional(caminho, 'POST', { versao: jornada.versao, acao: 'reabrir', motivo: 'Retomar' })).codigo, 200);
+  jornada = (await estado()).journeys.find((item) => item.id === jornada.id);
+  assert.equal((await profissional(`/api/jornadas/${jornada.id}/etapas/${jornada.stages[0].id}`, 'PUT', dadosEtapa(jornada))).codigo, 200);
+  jornada = (await estado()).journeys.find((item) => item.id === jornada.id);
+  assert.equal((await profissional(caminho, 'POST', { versao: jornada.versao, acao: 'concluir', motivo: 'Etapas finalizadas' })).codigo, 200);
+  jornada = (await estado()).journeys.find((item) => item.id === jornada.id);
+  const etapas = structuredClone(jornada.stages);
+  assert.equal((await profissional(caminho, 'POST', { versao: jornada.versao, acao: 'reabrir', motivo: 'Reavaliar acompanhamento' })).codigo, 200);
+  jornada = (await estado(paciente)).journeys.find((item) => item.id === jornada.id);
+  assert.equal(jornada.situacao, 'Ativa'); assert.deepEqual(jornada.stages, etapas);
+  assert.equal(modelo.progress(jornada).percent, 100);
 });
 
 test('segurança: recusa mutação de outra origem e não serve arquivos do servidor', async () => {
@@ -217,4 +248,16 @@ test('recorte P3: um perfil reservado ao P4 não recebe sessão mesmo com senha 
   const cliente = criarCliente();
   assert.equal((await cliente('/api/entrar', 'POST', { email: 'gestor@fluxsus.demo', senha: '123456' })).codigo, 403);
   assert.equal((await banco.query("SELECT COUNT(*) FROM sessoes WHERE usuario_id='US-P4'")).rows[0].count, '0');
+});
+
+test('persistência: jornadas e sessões continuam disponíveis após reiniciar a API e suas conexões', async () => {
+  const jornada = await criar();
+  await new Promise((resolver) => servidor.close(resolver));
+  await banco.end();
+  banco = criarConexao(process.env.TEST_DATABASE_URL, { options: `-c search_path=${esquema}` });
+  servidor = criarAplicacao(banco).listen(0, '127.0.0.1');
+  await new Promise((resolver) => servidor.once('listening', resolver));
+  endereco = 'http://127.0.0.1:' + servidor.address().port;
+  const recuperada = (await estado()).journeys.find((item) => item.id === jornada.id);
+  assert.deepEqual(recuperada, jornada);
 });
