@@ -5,7 +5,7 @@ const { join } = require('node:path');
 const { criarConexao, prepararBanco, transacao } = require('./banco.js');
 const { entrar, sair, identificarUsuario, cookieSessao, usuarioParaTela } = require('./autenticacao.js');
 const { exigir } = require('./validacao.js');
-const { consultarEstado } = require('./consultas.js');
+const { consultarEstado, buscarPacientes } = require('./consultas.js');
 
 function criarAplicacao(banco, opcoes = {}) {
   const aplicacao = express();
@@ -58,6 +58,7 @@ function criarAplicacao(banco, opcoes = {}) {
     await sair(banco, requisicao);
     resposta.set('Set-Cookie', cookieSessao('', opcoes.cookieSeguro)).json({ mensagem: 'Sessão encerrada.' });
   });
+  aplicacao.get('/api/pacientes', async (requisicao, resposta) => resposta.json(await buscarPacientes(banco, requisicao.usuario, requisicao.query.busca)));
   aplicacao.get('/api/estado', async (requisicao, resposta) => {
     const estado = await transacao(banco, async (conexao) => {
       await conexao.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');

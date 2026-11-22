@@ -2,6 +2,15 @@
 
 const { exigir, permitir } = require('./validacao.js');
 
+async function buscarPacientes(conexao, usuario, busca = '') {
+  permitir(usuario, 'profissional');
+  const consulta = await conexao.query(
+    'SELECT dados FROM pacientes WHERE nome ILIKE $1 OR cns LIKE $1 OR id ILIKE $1 ORDER BY nome LIMIT 30',
+    [`%${String(busca).slice(0, 150)}%`]
+  );
+  return consulta.rows.map((linha) => linha.dados);
+}
+
 async function consultarEstado(conexao, usuario, pacienteId) {
   permitir(usuario, 'paciente', 'profissional');
   if (usuario.perfil === 'paciente') {
@@ -24,4 +33,4 @@ async function consultarEstado(conexao, usuario, pacienteId) {
   return { version: 3, patient: cadastro.rows[0].dados, journeys: jornadas, events: historico.rows.map((linha) => linha.dados) };
 }
 
-module.exports = { consultarEstado };
+module.exports = { buscarPacientes, consultarEstado };
