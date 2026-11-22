@@ -502,3 +502,29 @@ input:disabled { color: #75858f; background: #eef3f5; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Evidence of dependencies, result reuse and referral propagation. */
+.flow-evidence { margin-top:24px; padding:28px; border:1px solid #dce8ed; border-radius:20px; background:white; }
+.flow-evidence section + section { margin-top:28px; padding-top:24px; border-top:1px solid #e6edef; }
+.flow-evidence h2 { font-size:20px; margin:8px 0 12px; }
+.flow-evidence p { color:#58717d; line-height:1.6; margin:10px 0; }
+.parallel-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:18px; }
+.dependency-card,.linked-referral,.reuse-confirmed { padding:18px; border:1px solid #dce8ed; border-radius:12px; margin-bottom:12px; }
+.dependency-card strong,.dependency-card small,.linked-referral small,.reuse-confirmed small { display:block; }
+.dependency-card small { margin-top:10px; color:#58717d; }
+.dependency-card.available,.reuse-confirmed { background:#edf9f5; border-color:#99d8c9; }
+.linked-referral .status-pill { margin-top:12px; }
+.reuse-dialog { border:1px solid #dce8ed; border-radius:20px; padding:28px; width:min(600px,calc(100vw - 36px)); color:#123247; max-height:90vh; overflow:auto; }
+.reuse-dialog::backdrop { background:rgba(10,30,42,.45); }
+.reuse-dialog label { display:block; margin:18px 0; }
+.reuse-dialog textarea { display:block; width:100%; margin-top:10px; padding:12px; border:1px solid #a6bfca; border-radius:8px; font:inherit; }
+.reuse-dialog p { line-height:1.6; }
+#reuse-error { color:#a73920; }
+@media(max-width:640px) { .parallel-grid { grid-template-columns:1fr; } .flow-evidence { padding:18px; } }
+/* Formulário de dependências e indicadores do incremento funcional. */
+.stage-row .dependencias-etapa { grid-column: 2 / -1; display: grid; gap: 8px; font-size: 13px; }
+.dependencias-etapa small { color: #587181; font-weight: 400; }
+.stage-row .pre-requisitos { width: 100%; min-height: 78px; }
+.manager-indicators { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+.aviso-lido { opacity: .75; }
+.patient-result small { display: block; margin-top: 6px; }
