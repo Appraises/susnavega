@@ -1,0 +1,18 @@
+services:
+  banco:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: fluxsus_p3
+      POSTGRES_USER: fluxsus
+      POSTGRES_PASSWORD: fluxsus_demo
+    ports:
+      - "127.0.0.1:55433:5432"
+    volumes:
+      - dados_postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fluxsus -d fluxsus_p3"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  dados_postgres:

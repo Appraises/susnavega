@@ -78,6 +78,10 @@
     state.version = 2;
     state.journeys.forEach((journey) => {
       journey.stages.forEach((stage) => {
+        if (!Array.isArray(stage.dependsOn)) {
+          const index = journey.stages.indexOf(stage);
+          stage.dependsOn = index ? [journey.stages[index - 1].id] : [];
+        }
         if (stage.owner === 'Regulação') stage.owner = 'Secretariado';
         if (stage.title === 'Análise da regulação') {
           stage.title = 'Encaminhamento à oftalmologia';
@@ -104,6 +108,7 @@
   }
 
   function journeyStatus(journey) {
+    if (journey.situacao === 'Planejada') return 'Planejada';
     if (journey.situation === 'Suspensa' || journey.situation === 'Concluída') return journey.situation;
     if (currentIndex(journey) === -1) return 'Aguardando conclusão';
     if (journey.situation === 'Em andamento') return 'Em andamento';
@@ -120,11 +125,13 @@
     const situation = journeyStatus(journey);
     if (situation === 'Suspensa') return { kind: 'paused', title: 'Jornada suspensa: aguarde a equipe de saúde.' };
     if (situation === 'Concluída') return { kind: 'complete', title: 'Jornada concluída' };
+    const available = availableStages(journey);
+    if (available.length) return { kind: 'stage', title: available[0].title, stageId: available[0].id };
     const pending = openPendings(journey).find((item) => item.owner === 'Paciente') || openPendings(journey)[0];
     if (pending) return { kind: 'pending', title: pending.action, owner: pending.owner, reason: pending.reason, stageId: pending.stageId };
     const index = currentIndex(journey);
     if (index === -1) return { kind: 'awaiting-completion', title: 'Aguardando conclusão pela equipe de saúde' };
-    return { kind: 'stage', title: journey.stages[index].title, stageId: journey.stages[index].id };
+    return { kind: 'waiting', title: 'Aguarde a conclusão dos pré-requisitos pela equipe.' };
   }
 
   function nextId(journeys) {
@@ -247,5 +254,32 @@
     return { state: result, journey };
   }
 
-  return { STORAGE_KEY, STAGE_STATUSES, authenticateDemo, localDate, seedState, normalizeState, currentIndex, progress, journeyStatus, openPendings, nextStep, createJourney, updateStage, changeJourneySituation };
+  function stageAvailability(journey, stage) {
+    const missing = (stage.dependsOn || []).filter((id) => journey.stages.find((item) => item.id === id)?.status !== 'Concluído');
+    const blocked = (stage.pending || []).some((item) => item.status === 'Aberta' && item.blocking !== false);
+    return { available: stage.status !== 'Concluído' && !missing.length && !blocked && !['Suspensa', 'Concluída'].includes(journey.situation), missing, blocked };
+  }
+
+function availableStages(journey) {
+    return journey.stages.filter((stage) => stageAvailability(journey, stage).available)
+      .sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999') || journey.stages.indexOf(a) - journey.stages.indexOf(b));
+  }
+
+function validateDependencies(journey) {
+    const visiting = new Set(), visited = new Set();
+    function visit(stage) {
+      if (visiting.has(stage.id)) throw new Error('As dependências não podem formar um ciclo.');
+      if (visited.has(stage.id)) return;
+      visiting.add(stage.id);
+      for (const id of stage.dependsOn || []) {
+        const prerequisite = journey.stages.find((item) => item.id === id);
+        if (!prerequisite || id === stage.id) throw new Error('Escolha outra etapa da mesma jornada como pré-requisito.');
+        visit(prerequisite);
+      }
+      visiting.delete(stage.id); visited.add(stage.id);
+    }
+    journey.stages.forEach(visit);
+  }
+
+  return { STORAGE_KEY, STAGE_STATUSES, authenticateDemo, localDate, seedState, normalizeState, currentIndex, progress, journeyStatus, openPendings, nextStep, createJourney, updateStage, changeJourneySituation, offsetDate, copy, stageAvailability, availableStages, validateDependencies };
 });
