@@ -7,6 +7,7 @@ const { entrar, sair, identificarUsuario, cookieSessao, usuarioParaTela } = requ
 const { exigir } = require('./validacao.js');
 const { consultarEstado, buscarPacientes } = require('./consultas.js');
 const { criarJornada, atualizarEtapa, alterarSituacao } = require('./jornadas.js');
+const { listarEncaminhamentos, listarOpcoes, salvarEncaminhamento } = require('./encaminhamentos.js');
 
 function criarAplicacao(banco, opcoes = {}) {
   const aplicacao = express();
@@ -62,6 +63,20 @@ function criarAplicacao(banco, opcoes = {}) {
       return consultarEstado(conexao, requisicao.usuario, requisicao.query.paciente);
     });
     resposta.json(estado);
+  });
+  aplicacao.get('/api/encaminhamentos/opcoes', async (requisicao, resposta) => {
+    resposta.json({ opcoes: await listarOpcoes(banco, requisicao.usuario) });
+  });
+  aplicacao.get('/api/encaminhamentos', async (requisicao, resposta) => {
+    resposta.json({ encaminhamentos: await listarEncaminhamentos(banco, requisicao.usuario) });
+  });
+  aplicacao.post('/api/encaminhamentos', async (requisicao, resposta) => {
+    const resultado = await transacao(banco, (conexao) => salvarEncaminhamento(conexao, requisicao.usuario, requisicao.body || {}));
+    resposta.status(201).json(resultado);
+  });
+  aplicacao.put('/api/encaminhamentos/:id', async (requisicao, resposta) => {
+    const resultado = await transacao(banco, (conexao) => salvarEncaminhamento(conexao, requisicao.usuario, requisicao.body || {}, requisicao.params.id));
+    resposta.json(resultado);
   });
   aplicacao.post('/api/jornadas', async (requisicao, resposta) => {
     const id = await transacao(banco, (conexao) => criarJornada(conexao, requisicao.usuario, requisicao.body || {}));

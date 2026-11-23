@@ -20,6 +20,22 @@ CREATE TABLE IF NOT EXISTS etapas (
   id TEXT PRIMARY KEY, jornada_id TEXT NOT NULL REFERENCES jornadas(id), ordem INTEGER NOT NULL,
   dados JSONB NOT NULL, UNIQUE(id, jornada_id)
 );
+CREATE TABLE IF NOT EXISTS encaminhamentos (
+  id TEXT PRIMARY KEY,
+  jornada_id TEXT NOT NULL,
+  etapa_id TEXT NOT NULL,
+  destino TEXT NOT NULL,
+  data TEXT NOT NULL,
+  situacao TEXT NOT NULL CHECK(situacao IN ('Solicitado','Aguardando agendamento','Agendado','Realizado','Devolvido')),
+  motivo TEXT NOT NULL DEFAULT '',
+  criado_por_id TEXT NOT NULL REFERENCES usuarios(id),
+  atualizado_por_id TEXT NOT NULL REFERENCES usuarios(id),
+  criado_em TEXT NOT NULL,
+  atualizado_em TEXT NOT NULL,
+  versao INTEGER NOT NULL DEFAULT 1,
+  FOREIGN KEY(etapa_id, jornada_id) REFERENCES etapas(id, jornada_id)
+);
+CREATE INDEX IF NOT EXISTS encaminhamentos_jornada ON encaminhamentos(jornada_id, atualizado_em DESC);
 CREATE TABLE IF NOT EXISTS historico (
   id TEXT PRIMARY KEY, jornada_id TEXT REFERENCES jornadas(id), dados JSONB NOT NULL
 );

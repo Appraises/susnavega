@@ -221,14 +221,18 @@ test('RF010/RF011: paciente vê motivo, ação, responsável, resolução e pró
   assert.equal(modelo.nextStep(jornada).title, 'Consulta de retorno');
 });
 
-test('recorte P3: não publica operações ou tabelas de encaminhamentos, avisos, FHIR, reúso e gestão', async () => {
+test('RF013: encaminhamentos ficam restritos ao Secretariado e outras operações seguem fora do P3', async () => {
   for (const [caminho, metodo] of [
-    ['/api/indicadores', 'GET'], ['/api/encaminhamentos', 'POST'],
-    ['/api/resultados', 'POST'], ['/api/avisos/inexistente/ler', 'POST'],
+    ['/api/indicadores', 'GET'], ['/api/resultados', 'POST'],
+    ['/api/avisos/inexistente/ler', 'POST'],
     ['/api/jornadas/inexistente/etapas/inexistente/reuso', 'POST']
   ]) assert.equal((await profissional(caminho, metodo, metodo === 'GET' ? undefined : {})).codigo, 404);
+  for (const [caminho, metodo] of [
+    ['/api/encaminhamentos', 'GET'], ['/api/encaminhamentos', 'POST'],
+    ['/api/encaminhamentos/opcoes', 'GET']
+  ]) assert.equal((await profissional(caminho, metodo, metodo === 'GET' ? undefined : {})).codigo, 403);
   const tabelas = await banco.query('SELECT tablename FROM pg_tables WHERE schemaname=$1 ORDER BY tablename', [esquema]);
-  assert.deepEqual(tabelas.rows.map((linha) => linha.tablename), ['etapas', 'historico', 'jornadas', 'pacientes', 'sessoes', 'usuarios']);
+  assert.deepEqual(tabelas.rows.map((linha) => linha.tablename), ['encaminhamentos', 'etapas', 'historico', 'jornadas', 'pacientes', 'sessoes', 'usuarios']);
 });
 
 test('RF007: sessão expirada não permite consultar dados', async () => {

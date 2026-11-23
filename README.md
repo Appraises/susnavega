@@ -11,6 +11,7 @@ O servidor usa Node.js, Express e PostgreSQL. A interface em HTML, CSS e JavaScr
 - Criação de jornada Planejada com uma a seis etapas, apresentadas em sequência no formulário.
 - Atualização de estado, data, responsável e observação da etapa.
 - Pendência com motivo, ação, responsável, prazo opcional, bloqueio e resolução.
+- Encaminhamento interno registrado pelo Secretariado, com atualização de situação, devolução justificada, reenvio, autoria e horário.
 - Consulta da jornada pelo paciente, progresso por etapas concluídas e próximo passo.
 - Suspensão, conclusão e reabertura pelo profissional, preservando etapas e exigindo justificativa.
 - Histórico gravado na mesma transação das alterações e proteção contra edição de versão desatualizada (HTTP 409).
@@ -53,9 +54,12 @@ Contas sintéticas (senha `123456`):
 | --- | --- |
 | Paciente | paciente@fluxsus.demo |
 | Profissional | profissional@fluxsus.demo |
+| Secretariado | secretariado@fluxsus.demo |
 | Outro paciente, sem jornada inicial | pedro@fluxsus.demo |
 
-Os perfis Secretariado e Gestor fazem parte do escopo geral do projeto, mas não têm acesso operacional neste recorte. O servidor não cria sessões para esses perfis.
+O Secretariado acessa somente as operações administrativas de encaminhamento. Ele não pode consultar os dados clínicos da jornada pela rota geral. A tela do Secretariado e a propagação visual completa entre os três perfis ficam para a próxima entrega. O Gestor não tem acesso operacional neste recorte.
+
+Rotas do Secretariado: `GET /api/encaminhamentos/opcoes` lista paciente, jornada e etapas disponíveis sem dados clínicos; `GET /api/encaminhamentos` lista os registros administrativos; `POST /api/encaminhamentos` registra uma solicitação; e `PUT /api/encaminhamentos/:id` atualiza a situação, devolve com motivo obrigatório ou reenvia. As alterações usam a versão da jornada e entram no histórico com autoria e horário.
 
 ## Testar e empacotar
 
@@ -95,6 +99,6 @@ O workflow verifica instalação, sintaxe, lint, testes e build em `main`, `feat
 
 ## Limites desta versão
 
-Não inclui rotas, tabelas ou telas operacionais de encaminhamentos, notificações, FHIR, reúso ou indicadores da gestão. Uma pendência é exibida na própria jornada; não representa um sistema completo de notificações. A formulação do próximo passo ainda é feita pelo modelo da interface. O servidor confere dependências antes de permitir avanço, mas o formulário do P3 trabalha com uma sequência.
+Esta etapa disponibiliza a persistência e a API de encaminhamentos, mas ainda não inclui as telas do Secretariado nem a demonstração visual completa entre os três perfis. Notificações individuais, FHIR, reúso e indicadores da gestão continuam fora deste recorte. Uma pendência é exibida na própria jornada; não representa um sistema completo de notificações. A formulação do próximo passo ainda é feita pelo modelo da interface. O servidor confere dependências antes de permitir avanço, mas o formulário do P3 trabalha com uma sequência.
 
 Os dados são acadêmicos e sintéticos, sem conexão com hospitais. Não foram comprovadas metas de desempenho, acessibilidade ou benefícios clínicos. Não há hospedagem pública, Gov.br/OIDC, cancelamento de jornada, paginação completa, migrações versionadas nem implantação automática. A versão completa foi preservada fora deste recorte para revisão e integração no P4.
