@@ -261,3 +261,31 @@ test('persistência: jornadas e sessões continuam disponíveis após reiniciar 
   const recuperada = (await estado()).journeys.find((item) => item.id === jornada.id);
   assert.deepEqual(recuperada, jornada);
 });
+
+test('RF007: limita tentativas de login concorrentes e aceita acesso válido após falhas', async () => {
+  const servidorIsolado = criarAplicacao(banco).listen(0, '127.0.0.1');
+  await new Promise((resolver) => servidorIsolado.once('listening', resolver));
+  const enderecoIsolado = `http://127.0.0.1:${servidorIsolado.address().port}`;
+
+  async function entrarComSenha(senha) {
+    const resposta = await fetch(`${enderecoIsolado}/api/entrar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'paciente@fluxsus.demo', senha })
+    });
+    await resposta.arrayBuffer();
+    return resposta.status;
+  }
+
+  try {
+    assert.equal(await entrarComSenha('senha-incorreta'), 401);
+    assert.equal(await entrarComSenha('senha-incorreta'), 401);
+    assert.equal(await entrarComSenha('123456'), 200);
+
+    const respostas = await Promise.all(Array.from({ length: 20 }, () => entrarComSenha('senha-incorreta')));
+    assert.equal(respostas.filter((codigo) => codigo === 401).length, 15);
+    assert.equal(respostas.filter((codigo) => codigo === 429).length, 5);
+  } finally {
+    await new Promise((resolver) => servidorIsolado.close(resolver));
+  }
+});
