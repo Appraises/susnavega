@@ -36,7 +36,21 @@ async function prepararBanco(banco) {
     await conexao.query(esquema);
     const existentes = await conexao.query('SELECT id FROM pacientes LIMIT 1');
     if (!existentes.rowCount) await criarDadosIniciais(conexao);
+    await garantirContaSecretariado(conexao);
   });
+}
+
+async function garantirContaSecretariado(conexao) {
+  const email = 'secretariado@fluxsus.demo';
+  const existente = await conexao.query('SELECT id FROM usuarios WHERE email = $1', [email]);
+  if (existente.rowCount) return;
+
+  const sal = randomBytes(16).toString('hex');
+  const resumo = scryptSync('123456', sal, 64).toString('hex');
+  await conexao.query(
+    'INSERT INTO usuarios (id,email,nome,perfil,paciente_id,sal,senha_hash) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING',
+    ['US-003', email, 'João Lima', 'secretariado', null, sal, resumo]
+  );
 }
 
 async function criarDadosIniciais(conexao) {
@@ -49,6 +63,7 @@ async function criarDadosIniciais(conexao) {
   const contas = [
     ['US-001', 'paciente', 'paciente@fluxsus.demo', 'Maria Costa', 'PAC-001'],
     ['US-002', 'profissional', 'profissional@fluxsus.demo', 'Dra. Carla Reis', null],
+    ['US-003', 'secretariado', 'secretariado@fluxsus.demo', 'João Lima', null],
     ['US-005', 'paciente', 'pedro@fluxsus.demo', 'Pedro Oliveira', 'PAC-002']
   ];
   for (const [id, perfil, email, nome, pacienteId] of contas) {

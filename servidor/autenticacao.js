@@ -17,7 +17,7 @@ async function entrar(banco, dados) {
   const usuario = consulta.rows[0];
   const resumo = await calcularSenha(senha, usuario?.sal || 'usuario-inexistente', 64);
   exigir(usuario && timingSafeEqual(resumo, Buffer.from(usuario.senha_hash, 'hex')), 'Confira o usuário e a senha.', 401);
-  permitir(usuario, 'paciente', 'profissional');
+  permitir(usuario, 'paciente', 'profissional', 'secretariado');
   const token = randomBytes(32).toString('hex');
   await banco.query('DELETE FROM sessoes WHERE expira_em <= $1', [Date.now()]);
   await banco.query('INSERT INTO sessoes VALUES ($1,$2,$3)', [resumirToken(token), usuario.id, Date.now() + DURACAO_SESSAO * 1000]);

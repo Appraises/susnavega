@@ -108,6 +108,7 @@ async function atualizarEtapa(conexao, usuario, jornadaId, etapaId, dados) {
   exigir(!(dados.resolverPendencia && dados.pendencia), 'Resolva a pendência anterior antes de registrar outra.');
   if (dados.resolverPendencia) {
     for (const pendencia of pendenciasAbertas(etapa)) {
+      exigir(!String(pendencia.id || '').startsWith('REF-'), 'A pendência do encaminhamento deve ser resolvida pelo Secretariado.', 403);
       pendencia.status = 'Resolvida';
       pendencia.resolvedAt = new Date().toISOString();
     }
