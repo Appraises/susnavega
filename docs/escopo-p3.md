@@ -9,7 +9,7 @@ O P3 usa um fluxo completo entre profissional e paciente para demonstrar a aplic
 | Etapas e pendências | Motivo, ação, responsável, bloqueio, resolução, próximo passo e histórico |
 | Transações e controle de versão | Rollback e duas gravações concorrentes com uma resposta 409 |
 | Suspender/concluir/reabrir | Permissões e guardas; etapas e progresso preservados |
-| Encaminhamentos internos — etapa de servidor | Conta sintética do Secretariado, registro, atualização, devolução com motivo, reenvio, auditoria e controle de versão |
+| Encaminhamentos internos entre três perfis | Tela do Secretariado para registrar e atualizar; a mesma situação, devolução, pendência, autoria e horário aparecem para profissional e paciente |
 | Persistência | Reinício da API e nova leitura dos dados e sessão |
 | Execução e qualidade | Instalação limpa, sintaxe, lint, testes e build |
 
@@ -17,11 +17,11 @@ O resultado real das verificações deve ser registrado depois da execução e v
 
 ## Entrega da interface do Secretariado
 
-A API e a persistência dos encaminhamentos estão nesta etapa. A tela administrativa e a demonstração de que paciente, profissional e Secretariado veem a atualização correspondente ficam para a entrega seguinte. Até lá, o fluxo entre os três perfis não deve ser marcado como completo.
+A interface e as rotas do servidor apresentam o encaminhamento compartilhado entre os três perfis. O roteiro de verificação está em `docs/cenarios-encaminhamentos.md`. A equipe ainda deve executar os cenários e guardar capturas reais antes de afirmar que o fluxo foi validado por completo.
 
 ## Integração posterior no P4
 
-Notificações individuais, importação FHIR, confirmação de reúso e indicadores da gestão continuam fora da API, do esquema e da interface deste recorte. A API dos encaminhamentos ainda precisa da interface para demonstrar o fluxo completo. O algoritmo existente de dependências e a proteção de versão foram mantidos, sem retirar proteções já implementadas. Paralelismo completo na interface, centralização do próximo passo no backend, paginação, refatorações e ensaios de qualidade continuam como evolução ou validação.
+Notificações individuais, importação FHIR, confirmação de reúso e indicadores da gestão continuam fora da API, do esquema e da interface deste recorte. O algoritmo existente de dependências e a proteção de versão foram mantidos, sem retirar proteções já implementadas. Paralelismo completo na interface, centralização do próximo passo no backend, paginação, refatorações e ensaios de qualidade continuam como evolução ou validação.
 
 ## Alinhamento do relatório
 

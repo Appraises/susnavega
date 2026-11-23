@@ -4,12 +4,21 @@ let atualizandoDados = false;
 let salvandoAlteracao = false;
 
 function estadoVazio() {
-  return { patient: { id: '', name: '', shortName: '', cns: '', unit: '' }, journeys: [], events: [] };
+  return { patient: { id: '', name: '', shortName: '', cns: '', unit: '' }, journeys: [], events: [], referrals: [], referralOptions: [] };
 }
 
 async function carregarEstado(pacienteId) {
+  if (session?.role === 'secretariat') {
+    const [lista, opcoes] = await Promise.all([
+      requisitarApi('/encaminhamentos'),
+      requisitarApi('/encaminhamentos/opcoes')
+    ]);
+    state = { ...estadoVazio(), referrals: lista.encaminhamentos, referralOptions: opcoes.opcoes };
+    return;
+  }
   const parametro = pacienteId || state.patient.id;
   state = await requisitarApi('/estado' + (parametro ? '?paciente=' + encodeURIComponent(parametro) : ''));
+  state.referrals ||= [];
 }
 
 async function salvarAlteracao(caminho, metodo, dados) {
@@ -24,6 +33,7 @@ async function salvarAlteracao(caminho, metodo, dados) {
     if (erro.codigo === 409) {
       await carregarEstado();
       closeModal(); closeSituationModal();
+      closeReferralModal();
       renderAll();
     }
     if (erro.codigo === 401) { session = null; state = estadoVazio(); showLogin(); }

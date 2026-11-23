@@ -5,9 +5,11 @@ const screens = [...document.querySelectorAll('.screen')];
 const menuButton = document.querySelector('.mobile-menu');
 const modal = document.getElementById('update-modal');
 const situationModal = document.getElementById('situation-modal');
+const referralModal = document.getElementById('referral-modal');
 const createForm = document.getElementById('create-journey-form');
 const updateForm = document.getElementById('update-form');
 const situationForm = document.getElementById('situation-form');
+const referralForm = document.getElementById('referral-form');
 const pendingToggle = document.getElementById('has-pending');
 const pendingFields = document.getElementById('pending-fields');
 const resolveToggle = document.getElementById('resolve-pending');
@@ -16,9 +18,11 @@ let focusBeforeModal;
 let showCompleted = false;
 const PATIENT_SCREENS = new Set(['patient-home', 'patient-journey']);
 const PROFESSIONAL_SCREENS = new Set(['professional-search', 'professional-history', 'professional-create', 'professional-manage']);
+const SECRETARIAT_SCREENS = new Set(['secretariat-referrals']);
 let session = null;
 let state = estadoVazio();
 let versaoEdicao = null;
+let referralEditId = null;
 
 let patientJourneyId = state.journeys[0]?.id;
 let professionalJourneyId = patientJourneyId;
@@ -78,13 +82,15 @@ function applySession() {
   document.querySelector('#auth-screen').hidden = true;
   document.querySelector('.prototype-shell').hidden = false;
   const professional = session.role === 'professional';
-  document.querySelector('.patient-nav').classList.toggle('hidden', professional);
+  const secretariat = session.role === 'secretariat';
+  document.querySelector('.patient-nav').classList.toggle('hidden', professional || secretariat);
   document.querySelector('.professional-nav').classList.toggle('hidden', !professional);
+  document.querySelector('.secretariat-nav').classList.toggle('hidden', !secretariat);
   document.querySelector('.profile-name').textContent = session.name;
   document.querySelector('.profile-meta').textContent = session.label;
   document.querySelector('.header-profile .avatar').textContent = session.initials;
-  document.querySelector('.session-role').textContent = professional ? 'Profissional' : 'Paciente';
-  showScreen(professional ? 'professional-search' : 'patient-home');
+  document.querySelector('.session-role').textContent = professional ? 'Profissional' : secretariat ? 'Secretariado' : 'Paciente';
+  showScreen(professional ? 'professional-search' : secretariat ? 'secretariat-referrals' : 'patient-home');
 }
 
 function showScreen(id) {
@@ -96,7 +102,9 @@ function showScreen(id) {
     id = 'professional-history';
     showToast('Nenhuma jornada', 'Crie uma jornada para este paciente antes de gerenciar etapas.');
   }
-  const allowed = session?.role === 'professional' ? PROFESSIONAL_SCREENS : session?.role === 'patient' ? PATIENT_SCREENS : null;
+  const allowed = session?.role === 'professional' ? PROFESSIONAL_SCREENS
+    : session?.role === 'patient' ? PATIENT_SCREENS
+      : session?.role === 'secretariat' ? SECRETARIAT_SCREENS : null;
   if (!allowed?.has(id) || !document.getElementById(id)) return;
   renderAll();
   screens.forEach((screen) => screen.classList.toggle('active', screen.id === id));
@@ -224,6 +232,7 @@ function renderPatientJourney() {
       </button>`;
     }).join('')}`;
   renderPatientDetail(journey);
+  renderEncaminhamentosDaJornada('#patient-referrals', journey.id);
 }
 
 function renderPatientDetail(journey) {
@@ -244,6 +253,71 @@ function renderPatientDetail(journey) {
     ? `<div class="pending-title"><span>!</span><strong>Pendência aberta</strong></div><dl><div><dt>Motivo</dt><dd>${escaparHtml(pending.reason)}</dd></div><div><dt>Ação necessária</dt><dd>${escaparHtml(pending.action)}</dd></div><div><dt>Responsável</dt><dd>${escaparHtml(pending.owner)}</dd></div>${pending.dueDate ? `<div><dt>Prazo</dt><dd>${escaparHtml(dataPorExtenso(pending.dueDate))}</dd></div>` : ''}</dl>`
     : `<div class="pending-title"><span>✓</span><strong>Sem pendência aberta</strong></div><p>${escaparHtml(stage.observation || stage.note || 'Nenhuma ação adicional registrada para esta etapa.')}</p>`;
   panel.querySelector('footer').textContent = `Última atualização: ${dataDoEvento(journey.updatedAt)} · Dados simulados`;
+}
+
+function encaminhamentosDaJornada(jornadaId) {
+  return (state.referrals || []).filter((item) => item.journey === jornadaId);
+}
+
+function classeSituacaoEncaminhamento(situacao) {
+  if (situacao === 'Devolvido') return 'returned';
+  if (situacao === 'Realizado') return 'complete';
+  return statusClass(situacao);
+}
+
+function textoDataEncaminhamento(data) {
+  return data ? dataPorExtenso(data) : 'Não informada';
+}
+
+function cartaoEncaminhamento(encaminhamento, administrativo = false) {
+  const atualizadoEm = encaminhamento.updatedAt ? dataDoEvento(encaminhamento.updatedAt) : 'Não informado';
+  const transicoes = {
+    Solicitado: ['Aguardando agendamento', 'Devolvido'],
+    'Aguardando agendamento': ['Agendado', 'Devolvido'],
+    Agendado: ['Realizado', 'Devolvido'],
+    Devolvido: ['Solicitado'],
+    Realizado: []
+  };
+  const podeAtualizar = administrativo && transicoes[encaminhamento.status]?.length;
+  return `<article class="referral-card">
+    <div>
+      <div class="referral-card-top"><span class="referral-code">${escaparHtml(encaminhamento.id)}</span><span class="status-pill ${classeSituacaoEncaminhamento(encaminhamento.status)}"><i></i>${escaparHtml(encaminhamento.status)}</span></div>
+      <h3>${escaparHtml(encaminhamento.journeyTitle || 'Jornada de cuidado')}</h3>
+      <p class="referral-patient">${escaparHtml(encaminhamento.patient || 'Paciente')} · ${escaparHtml(encaminhamento.stage || 'Etapa')}</p>
+    </div>
+    ${podeAtualizar ? `<button class="referral-update" type="button" data-update-referral="${escaparHtml(encaminhamento.id)}">Atualizar situação</button>` : ''}
+    <div class="referral-details">
+      <div><small>Destino</small><strong>${escaparHtml(encaminhamento.destination || 'Não informado')}</strong></div>
+      <div><small>Data prevista</small><strong>${escaparHtml(textoDataEncaminhamento(encaminhamento.date))}</strong></div>
+      <div><small>Atualizado por</small><strong>${escaparHtml(encaminhamento.updatedBy || 'Não informado')}</strong></div>
+      <div><small>Atualizado em</small><strong>${escaparHtml(atualizadoEm)}</strong></div>
+      ${encaminhamento.reason ? `<p class="referral-reason"><strong>Motivo da devolução:</strong> ${escaparHtml(encaminhamento.reason)}</p>` : ''}
+      ${encaminhamento.owner ? `<div><small>Responsável pela pendência</small><strong>${escaparHtml(encaminhamento.owner)}</strong></div>` : ''}
+      ${encaminhamento.nextAction ? `<div class="referral-next-action"><small>Próxima ação</small><strong>${escaparHtml(encaminhamento.nextAction)}</strong></div>` : ''}
+    </div>
+  </article>`;
+}
+
+function renderEncaminhamentosDaJornada(elemento, jornadaId) {
+  const secao = document.querySelector(elemento);
+  const lista = secao.querySelector('[data-journey-referrals]');
+  const encaminhamentos = encaminhamentosDaJornada(jornadaId);
+  secao.hidden = encaminhamentos.length === 0;
+  lista.innerHTML = encaminhamentos.length
+    ? encaminhamentos.map((item) => cartaoEncaminhamento(item)).join('')
+    : '';
+}
+
+function renderSecretariat() {
+  const encaminhamentos = state.referrals || [];
+  document.querySelector('#referral-count-active').textContent = String(encaminhamentos.filter((item) => !['Realizado', 'Devolvido'].includes(item.status)).length);
+  document.querySelector('#referral-count-scheduled').textContent = String(encaminhamentos.filter((item) => item.status === 'Agendado').length);
+  document.querySelector('#referral-count-returned').textContent = String(encaminhamentos.filter((item) => item.status === 'Devolvido').length);
+  document.querySelector('#referral-list').innerHTML = encaminhamentos.length
+    ? encaminhamentos.map((item) => cartaoEncaminhamento(item, true)).join('')
+    : '<p class="referral-empty">Nenhum encaminhamento registrado ainda. Use “Novo encaminhamento” para iniciar o fluxo.</p>';
+  document.querySelector('#new-referral-button').disabled = !(state.referralOptions || []).length;
+  document.querySelector('#new-referral-button').title = state.referralOptions?.length ? '' : 'Não há etapas abertas disponíveis para encaminhar.';
 }
 
 async function renderSearch() {
@@ -320,6 +394,7 @@ function renderProfessionalManage() {
   screen.querySelector('.situation-history').innerHTML = situationEvent
     ? `<strong>Última alteração: ${escaparHtml(situationEvent.from)} → ${escaparHtml(situationEvent.to)}</strong><small>Motivo: ${escaparHtml(situationEvent.reason)}</small><small>${escaparHtml(situationEvent.actor)} · ${escaparHtml(dataDoEvento(situationEvent.at))}</small>`
     : '<small>Nenhuma mudança de situação registrada nesta jornada.</small>';
+  renderEncaminhamentosDaJornada('#professional-referrals', journey.id);
 }
 
 function renderCreateSummary() {
@@ -334,6 +409,10 @@ function renderCreateSummary() {
 }
 
 function renderAll() {
+  if (session?.role === 'secretariat') {
+    renderSecretariat();
+    return;
+  }
   document.querySelector('#today-label').textContent = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date()).toUpperCase();
   renderPatientHome();
   renderPatientJourney();
@@ -450,7 +529,85 @@ function closeSituationModal() {
   focusBeforeModal?.focus();
 }
 
+function mostrarMotivoDevolucao() {
+  const precisaMotivo = document.querySelector('#referral-status').value === 'Devolvido';
+  const campo = document.querySelector('#referral-reason-wrap');
+  campo.classList.toggle('hidden', !precisaMotivo);
+  document.querySelector('#referral-reason').required = precisaMotivo;
+}
+
+function abrirModalEncaminhamentoNovo() {
+  if (session?.role !== 'secretariat') return;
+  const opcoes = state.referralOptions || [];
+  if (!opcoes.length) {
+    showToast('Nenhuma etapa disponível', 'As jornadas abertas não têm etapas pendentes de encaminhamento.');
+    return;
+  }
+  referralEditId = null;
+  focusBeforeModal = document.activeElement;
+  referralForm.reset();
+  document.querySelector('#referral-modal-title').textContent = 'Novo encaminhamento';
+  document.querySelector('#referral-create-fields').classList.remove('hidden');
+  document.querySelector('#referral-update-fields').classList.add('hidden');
+  document.querySelector('#referral-option').required = true;
+  document.querySelector('#referral-destination').required = true;
+  document.querySelector('#referral-date').required = true;
+  document.querySelector('#referral-status').required = false;
+  document.querySelector('#referral-reason-wrap').classList.add('hidden');
+  document.querySelector('#referral-reason').required = false;
+  document.querySelector('#referral-reason').value = '';
+  document.querySelector('#referral-option').innerHTML = opcoes.map((item, index) =>
+    `<option value="${index}">${escaparHtml(item.patient)} · ${escaparHtml(item.journey)} · ${escaparHtml(item.stage)}</option>`
+  ).join('');
+  document.querySelector('#referral-submit').textContent = 'Registrar encaminhamento';
+  referralModal.classList.add('open');
+  referralModal.setAttribute('aria-hidden', 'false');
+  document.querySelector('#referral-option').focus();
+}
+
+function abrirModalAtualizarEncaminhamento(id) {
+  if (session?.role !== 'secretariat') return;
+  const encaminhamento = (state.referrals || []).find((item) => item.id === id);
+  const transicoes = {
+    Solicitado: ['Aguardando agendamento', 'Devolvido'],
+    'Aguardando agendamento': ['Agendado', 'Devolvido'],
+    Agendado: ['Realizado', 'Devolvido'],
+    Devolvido: ['Solicitado'],
+    Realizado: []
+  };
+  const opcoes = transicoes[encaminhamento?.status] || [];
+  if (!encaminhamento || !opcoes.length) return;
+  referralEditId = encaminhamento.id;
+  focusBeforeModal = document.activeElement;
+  referralForm.reset();
+  document.querySelector('#referral-modal-title').textContent = `Atualizar ${encaminhamento.id}`;
+  document.querySelector('#referral-create-fields').classList.add('hidden');
+  document.querySelector('#referral-update-fields').classList.remove('hidden');
+  document.querySelector('#referral-option').required = false;
+  document.querySelector('#referral-destination').required = false;
+  document.querySelector('#referral-date').required = false;
+  document.querySelector('#referral-status').required = true;
+  document.querySelector('#referral-context').textContent = `${encaminhamento.patient} · ${encaminhamento.journeyTitle} · ${encaminhamento.stage} · situação atual: ${encaminhamento.status}`;
+  document.querySelector('#referral-status').innerHTML = opcoes.map((situacao) => `<option value="${escaparHtml(situacao)}">${escaparHtml(situacao)}</option>`).join('');
+  document.querySelector('#referral-reason').value = '';
+  mostrarMotivoDevolucao();
+  document.querySelector('#referral-submit').textContent = 'Salvar atualização';
+  referralModal.classList.add('open');
+  referralModal.setAttribute('aria-hidden', 'false');
+  document.querySelector('#referral-status').focus();
+}
+
+function closeReferralModal() {
+  referralModal.classList.remove('open');
+  referralModal.setAttribute('aria-hidden', 'true');
+  referralEditId = null;
+  focusBeforeModal?.focus();
+}
+
 document.addEventListener('click', async (event) => {
+  if (event.target.closest('#new-referral-button')) { abrirModalEncaminhamentoNovo(); return; }
+  const botaoAtualizarEncaminhamento = event.target.closest('[data-update-referral]');
+  if (botaoAtualizarEncaminhamento) { abrirModalAtualizarEncaminhamento(botaoAtualizarEncaminhamento.dataset.updateReferral); return; }
   const pacienteEscolhido = event.target.closest('[data-escolher-paciente]');
   if (pacienteEscolhido) {
     try {
@@ -480,12 +637,15 @@ document.addEventListener('keydown', (event) => {
   if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('[role="button"][data-screen]')) {
     event.preventDefault(); event.target.click();
   }
-  const activeModal = situationModal.classList.contains('open') ? situationModal : modal.classList.contains('open') ? modal : null;
+  const activeModal = referralModal.classList.contains('open') ? referralModal
+    : situationModal.classList.contains('open') ? situationModal
+      : modal.classList.contains('open') ? modal : null;
   if (!activeModal) {
     return;
   }
   if (event.key === 'Escape') {
-    if (activeModal === modal) closeModal();
+    if (activeModal === referralModal) closeReferralModal();
+    else if (activeModal === modal) closeModal();
     else closeSituationModal();
     return;
   }
@@ -637,6 +797,47 @@ situationForm.addEventListener('submit', async (evento) => {
     closeSituationModal();
     showToast('Situação atualizada', 'A alteração e sua autoria foram registradas no servidor.');
   } catch (erro) { showToast('Alteração não salva', erro.message); }
+});
+
+document.querySelector('.referral-close').addEventListener('click', closeReferralModal);
+document.querySelector('.referral-cancel').addEventListener('click', closeReferralModal);
+referralModal.addEventListener('click', (event) => { if (event.target === referralModal) closeReferralModal(); });
+document.querySelector('#referral-status').addEventListener('change', mostrarMotivoDevolucao);
+referralForm.addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  if (!referralForm.reportValidity()) return;
+  const editando = Boolean(referralEditId);
+  try {
+    let caminho, metodo, dados;
+    if (referralEditId) {
+      const encaminhamento = state.referrals.find((item) => item.id === referralEditId);
+      caminho = `/encaminhamentos/${encodeURIComponent(referralEditId)}`;
+      metodo = 'PUT';
+      dados = {
+        versao: encaminhamento.journeyVersion,
+        situacao: document.querySelector('#referral-status').value,
+        motivo: document.querySelector('#referral-reason').value
+      };
+    } else {
+      const opcao = state.referralOptions[Number(document.querySelector('#referral-option').value)];
+      caminho = '/encaminhamentos';
+      metodo = 'POST';
+      dados = {
+        jornadaId: opcao.journeyId,
+        etapaId: opcao.stageId,
+        destino: document.querySelector('#referral-destination').value,
+        data: document.querySelector('#referral-date').value,
+        situacao: 'Solicitado',
+        motivo: '',
+        versao: opcao.journeyVersion
+      };
+    }
+    await salvarAlteracao(caminho, metodo, dados);
+    closeReferralModal();
+    showToast(editando ? 'Encaminhamento atualizado' : 'Encaminhamento registrado', 'A atualização ficou disponível nas jornadas vinculadas.');
+  } catch (erro) {
+    showToast('Não foi possível salvar', erro.message);
+  }
 });
 
 window.addEventListener('focus', atualizarDados);

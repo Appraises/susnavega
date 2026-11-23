@@ -20,6 +20,7 @@
 <div aria-label="Contas de demonstração" class="auth-accounts">
 <button class="auth-account" data-demo-user="paciente@fluxsus.demo" type="button"><span class="avatar">MC</span><span><strong>Paciente</strong><small>Maria Costa</small></span></button>
 <button class="auth-account" data-demo-user="profissional@fluxsus.demo" type="button"><span class="avatar">CR</span><span><strong>Profissional</strong><small>Dra. Carla Reis</small></span></button>
+<button class="auth-account" data-demo-user="secretariado@fluxsus.demo" type="button"><span class="avatar">JL</span><span><strong>Secretariado</strong><small>João Lima</small></span></button>
 
 
 <button class="auth-account" data-demo-user="pedro@fluxsus.demo" type="button"><span class="avatar">PO</span><span><strong>Outro paciente</strong><small>Pedro Oliveira</small></span></button>
@@ -31,7 +32,7 @@
 <p class="auth-error" hidden="" id="auth-error" role="alert"></p>
 <button class="primary-button auth-submit" type="submit">Entrar</button>
 </form>
-<small class="auth-disclaimer">Incremento P3: acesso do paciente e do profissional, com dados sintéticos salvos no servidor.</small>
+<small class="auth-disclaimer">Incremento P3: acesso do paciente, do profissional e do Secretariado, com dados sintéticos salvos no servidor.</small>
 </div>
 </section>
 <div class="prototype-shell" hidden="">
@@ -65,12 +66,29 @@
 <button class="nav-item" data-screen="professional-create">Criar jornada</button>
 <button class="nav-item" data-screen="professional-manage">Gerenciar jornada</button>
 </nav>
+<nav aria-label="Telas do Secretariado" class="header-nav secretariat-nav hidden">
+<button class="nav-item active" data-screen="secretariat-referrals">Encaminhamentos</button>
+</nav>
 
 
 <button class="mobile-help help-button">Ajuda</button>
 <span class="session-indicator">Acesso demonstrativo · <strong class="session-role">Paciente</strong></span>
 </div>
 </header>
+
+<section aria-labelledby="secretariat-referrals-title" class="screen professional-screen" id="secretariat-referrals">
+<div class="page-heading">
+<div><span class="eyebrow teal">ÁREA DO SECRETARIADO</span><h1 id="secretariat-referrals-title">Encaminhamentos internos</h1><p>Registre solicitações e acompanhe cada atualização enviada às jornadas.</p></div>
+<button class="primary-button" id="new-referral-button" type="button">Novo encaminhamento</button>
+</div>
+<div aria-label="Resumo dos encaminhamentos" class="referral-stats">
+<div><small>Em andamento</small><strong id="referral-count-active">0</strong></div>
+<div><small>Agendados</small><strong id="referral-count-scheduled">0</strong></div>
+<div><small>Devolvidos</small><strong id="referral-count-returned">0</strong></div>
+</div>
+<div aria-live="polite" class="referral-list" id="referral-list"></div>
+<p class="demo-note">Os dados desta tela são sintéticos. Ações e atualizações ficam registradas com autoria e horário.</p>
+</section>
 
 <section aria-labelledby="patient-home-title" class="screen active" id="patient-home">
 <div class="page-heading">
@@ -157,6 +175,10 @@
 <footer>Dados sintéticos · Salvos no servidor</footer>
 </aside>
 </div>
+<section aria-labelledby="patient-referrals-title" class="journey-referrals" id="patient-referrals" hidden>
+<div class="section-heading"><div><span class="eyebrow teal">ENCAMINHAMENTOS</span><h2 id="patient-referrals-title">Atualizações do Secretariado</h2><p>As informações abaixo correspondem ao mesmo encaminhamento registrado pela equipe.</p></div></div>
+<div class="referral-list" data-journey-referrals></div>
+</section>
 </section>
 <section aria-labelledby="professional-search-title" class="screen professional-screen" id="professional-search">
 <div class="page-heading compact">
@@ -236,6 +258,10 @@
 </article>
 <aside class="manage-aside"><div class="manage-info"><span class="eyebrow teal">ETAPA SELECIONADA</span><h2>Eletrocardiograma</h2><dl><div><dt>Responsável</dt><dd>Setor de Cardiologia</dd></div><div><dt>Data</dt><dd>24 set. · 09:30</dd></div><div><dt>Estado</dt><dd><span class="status-pill scheduled">Agendado</span></dd></div></dl></div><div class="open-pending"><div><span>!</span><strong>Pendência aberta</strong></div><p>Paciente deve levar documento com foto.</p><small>Responsável: paciente</small></div><div class="situation-card"><span class="eyebrow teal">SITUAÇÃO DA JORNADA</span><h2>Em andamento</h2><p>As alterações de situação registram motivo, data, horário e profissional.</p><div class="situation-history"></div></div><div class="audit-note"><span>✓</span><p>Alterações registradas no servidor, com autoria, data e horário.</p></div></aside>
 </div>
+<section aria-labelledby="professional-referrals-title" class="journey-referrals" id="professional-referrals" hidden>
+<div class="section-heading"><div><span class="eyebrow teal">ENCAMINHAMENTOS</span><h2 id="professional-referrals-title">Encaminhamentos da jornada</h2><p>Atualizações administrativas vinculadas a esta jornada.</p></div></div>
+<div class="referral-list" data-journey-referrals></div>
+</section>
 </section>
 
 
@@ -255,6 +281,25 @@
 <div class="pending-fields full hidden" id="pending-fields"><label>Motivo da pendência<input id="pending-reason" value="Documento de identificação necessário"/></label><label>Responsável pela ação<select id="pending-owner"><option selected="">Paciente</option><option>Equipe hospitalar</option><option>Secretariado</option></select></label><label class="full">Ação necessária<input id="pending-action" value="Leve um documento com foto no dia do exame."/></label><label>Prazo (se houver)<input id="pending-due" type="date"/></label><label class="check-row"><input checked="" id="pending-blocking" type="checkbox"/> Esta pendência impede o avanço da etapa</label></div>
 <label class="check-row full hidden" id="resolve-pending-row"><input id="resolve-pending" type="checkbox"/><span><strong>Resolver pendência aberta</strong><small>Registra a resolução antes de avançar a etapa.</small></span></label>
 <div class="modal-actions full"><button class="ghost-button modal-cancel" type="button">Cancelar</button><button class="primary-button" type="submit">Salvar atualização</button></div>
+</form>
+</section>
+</div>
+<div aria-hidden="true" class="modal-backdrop" id="referral-modal">
+<section aria-labelledby="referral-modal-title" aria-modal="true" class="modal" role="dialog">
+<div class="modal-header"><div><span class="eyebrow teal">SECRETARIADO</span><h2 id="referral-modal-title">Novo encaminhamento</h2></div><button aria-label="Fechar" class="modal-close referral-close" type="button">×</button></div>
+<form id="referral-form">
+<div class="referral-create-fields full" id="referral-create-fields">
+<label class="full">Paciente, jornada e etapa<select id="referral-option" required></select></label>
+<label>Destino interno<input id="referral-destination" maxlength="150" placeholder="Ex.: Cardiologia" required></label>
+<label>Data prevista<input id="referral-date" type="date" required></label>
+<p class="referral-form-note full">A solicitação será criada com a situação “Solicitado”.</p>
+</div>
+<div class="referral-update-fields full hidden" id="referral-update-fields">
+<p class="referral-context full" id="referral-context"></p>
+<label class="full">Nova situação<select id="referral-status" required></select></label>
+</div>
+<label class="full hidden" id="referral-reason-wrap">Motivo da devolução<textarea id="referral-reason" maxlength="1000" rows="3" placeholder="Explique o que precisa ser corrigido"></textarea></label>
+<div class="modal-actions full"><button class="ghost-button referral-cancel" type="button">Cancelar</button><button class="primary-button" id="referral-submit" type="submit">Registrar encaminhamento</button></div>
 </form>
 </section>
 </div>
