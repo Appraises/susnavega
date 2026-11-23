@@ -23,7 +23,7 @@ Pré-requisitos: Node.js >= 24.15.0 e < 25, npm e PostgreSQL 18. Use apenas dado
 
 ```powershell
 npm ci
-Copy-Item .env.example .env
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
 powershell -NoProfile -File scripts/iniciar-postgres.ps1
 npm start
 ```
@@ -41,7 +41,7 @@ A sessão usa o cookie `fluxsus_p3_sessao`, separado do cookie da versão comple
 Como alternativa ao PostgreSQL nativo, com Docker disponível:
 
 ```powershell
-docker compose up -d banco
+docker compose up -d --wait banco
 docker compose exec banco createdb -U fluxsus fluxsus_p3_test
 ```
 
